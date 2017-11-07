@@ -6,7 +6,7 @@ Description: Methods to read data from GDS files and call statistical functions 
 Author: Matthew P. Conomos, Stephanie M. Gogarten
 Maintainer: Stephanie M. Gogarten <sdmorris@uw.edu>
 Depends: 
-Imports: stats, methods, SeqArray, SeqVarTools, Biobase, genesis2tests
+Imports: stats, methods, dplyr, SeqArray, SeqVarTools, Biobase, genesis2tests
 Suggests: testthat, GenomicRanges, SNPRelate, GENESIS
 License: GPL-3
 biocViews: SNP, GeneticVariability, Genetics, StatisticalMethod
