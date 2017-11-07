@@ -32,6 +32,7 @@ test_that("list", {
         GRanges(seqnames=rep(1,2), ranges=IRanges(start=c(1e6, 3e6), width=1e6)),
         GRanges(seqnames=rep(1,2), ranges=IRanges(start=c(3e6, 34e6), width=1e6)))
     iterator <- SeqVarListIterator(svd, variantRanges=gr, verbose=FALSE)
+    nullmod <- fitNullModel2(iterator, outcome="outcome", covars=c("sex", "age"), verbose=FALSE)
     assoc <- assocTestSeq2(iterator, nullmod, verbose=FALSE)
     expect_equal(nrow(assoc$results), length(gr))
     expect_equal(length(assoc$variantInfo), length(gr))
@@ -43,8 +44,9 @@ test_that("user weights", {
     variant.id <- seqGetData(svd, "variant.id")
     weights <- sample(1:10, length(variant.id), replace=TRUE)
     variantData(svd) <- AnnotatedDataFrame(data.frame(variant.id, weights))
-    seqSetFilterChrom(svd, include=21, verbose=FALSE)
+    seqSetFilterChrom(svd, include=22, verbose=FALSE)
     iterator <- SeqVarWindowIterator(svd, windowSize=5e5, windowShift=2.5e5, verbose=FALSE)
+    nullmod <- fitNullModel2(iterator, outcome="outcome", covars=c("sex", "age"), verbose=FALSE)
     assoc <- assocTestSeq2(iterator, nullmod, weight.user="weights", verbose=FALSE)
     tmp <- do.call(rbind, assoc$variantInfo)[,c("variant.id", "weight")]
     tmp <- tmp[!duplicated(tmp$variant.id),]
@@ -57,9 +59,10 @@ test_that("user weights", {
 test_that("assocTestSeq2 matches assocTestSeqWindow - Burden, Wald", {
     svd <- .testData()
     nullmod <- GENESIS::fitNullReg(sampleData(svd), outcome="outcome", covars=c("sex", "age"), verbose=FALSE)
-    assoc1 <- GENESIS::assocTestSeqWindow(svd, nullmod, window.size=100, window.shift=50, test="Burden", burden.test="Wald", verbose=FALSE)
+    assoc1 <- GENESIS::assocTestSeqWindow(svd, nullmod, window.size=100, window.shift=50, test="Burden", burden.test="Wald", verbose=FALSE, chromosome=1)
     
     nullmod <- fitNullModel2(svd, outcome="outcome", covars=c("sex", "age"), verbose=FALSE)
+    seqSetFilterChrom(svd, include=1, verbose=FALSE)
     iterator <- SeqVarWindowIterator(svd, windowSize=1e5, windowShift=5e4, verbose=FALSE)
     assoc2 <- assocTestSeq2(iterator, nullmod, test="Burden", burden.test="Wald", verbose=FALSE)
 
@@ -77,10 +80,11 @@ test_that("assocTestSeq2 matches assocTestSeqWindow - Burden, Wald", {
 
     res1 <- assoc1$results[assoc1$results$dup %in% 0,]
     res2 <- assoc2$results[assoc2$results$n.site > 0,]
-    chk <- function(x) {
-        paste(x$n.site, format(x$Est, digits=4, scientific=FALSE, trim=TRUE), sep="_")
-    }
-    expect_true(setequal(chk(res1), chk(res2)))
+    expect_equal(res1$n.site, res2$n.site)
+    expect_equal(res1$Est, res2$Est)
+    expect_equal(res1$SE, res2$Est.SE)
+    expect_equal(res1$Wald.stat, (res2$Wald.Stat)^2)
+    expect_equal(res1$Wald.pval, res2$Wald.pval)
     
     seqClose(svd)
 })
@@ -88,18 +92,20 @@ test_that("assocTestSeq2 matches assocTestSeqWindow - Burden, Wald", {
 test_that("assocTestSeq2 matches assocTestSeqWindow - Burden, Score", {
     svd <- .testData()
     nullmod <- GENESIS::fitNullReg(sampleData(svd), outcome="outcome", covars=c("sex", "age"), verbose=FALSE)
-    assoc1 <- GENESIS::assocTestSeqWindow(svd, nullmod, window.size=100, window.shift=50, test="Burden", burden.test="Score", verbose=FALSE)
+    assoc1 <- GENESIS::assocTestSeqWindow(svd, nullmod, window.size=100, window.shift=50, test="Burden", burden.test="Score", verbose=FALSE, chromosome=1)
     
     nullmod <- fitNullModel2(svd, outcome="outcome", covars=c("sex", "age"), verbose=FALSE)
+    seqSetFilterChrom(svd, include=1, verbose=FALSE)
     iterator <- SeqVarWindowIterator(svd, windowSize=1e5, windowShift=5e4, verbose=FALSE)
     assoc2 <- assocTestSeq2(iterator, nullmod, test="Burden", burden.test="Score", verbose=FALSE)
 
     res1 <- assoc1$results[assoc1$results$dup %in% 0,]
     res2 <- assoc2$results[assoc2$results$n.site > 0,]
-    chk <- function(x) {
-        paste(x$n.site, format(x$Score, digits=4, scientific=FALSE, trim=TRUE), sep="_")
-    }
-    expect_true(setequal(chk(res1), chk(res2)))
+    expect_equal(res1$n.site, res2$n.site)
+    expect_equal(res1$Score, res2$Score)
+    expect_equal(res1$Var, (res2$Score.SE)^2)
+    expect_equal(res1$Score.stat, (res2$Score.Stat)^2)
+    expect_equal(res1$Score.pval, res2$Score.pval)
     
     seqClose(svd)
 })
@@ -108,18 +114,20 @@ test_that("assocTestSeq2 matches assocTestSeqWindow - Burden, Wald, LMM", {
     svd <- .testData()
     grm <- .testGRM(svd)
     nullmod <- GENESIS::fitNullMM(sampleData(svd), outcome="outcome", covars=c("sex", "age"), covMatList=grm, verbose=FALSE)
-    assoc1 <- GENESIS::assocTestSeqWindow(svd, nullmod, window.size=100, window.shift=50, test="Burden", burden.test="Wald", verbose=FALSE)
+    assoc1 <- GENESIS::assocTestSeqWindow(svd, nullmod, window.size=100, window.shift=50, test="Burden", burden.test="Wald", verbose=FALSE, chromosome=1)
     
     nullmod <- fitNullModel2(svd, outcome="outcome", covars=c("sex", "age"), covMatList=grm, verbose=FALSE)
+    seqSetFilterChrom(svd, include=1, verbose=FALSE)
     iterator <- SeqVarWindowIterator(svd, windowSize=1e5, windowShift=5e4, verbose=FALSE)
     assoc2 <- assocTestSeq2(iterator, nullmod, test="Burden", burden.test="Wald", verbose=FALSE)
 
     res1 <- assoc1$results[assoc1$results$dup %in% 0,]
     res2 <- assoc2$results[assoc2$results$n.site > 0,]
-    chk <- function(x) {
-        paste(x$n.site, format(x$Est, digits=4, scientific=FALSE, trim=TRUE), sep="_")
-    }
-    expect_true(setequal(chk(res1), chk(res2)))
+    expect_equal(res1$n.site, res2$n.site)
+    expect_equal(res1$Est, res2$Est)
+    expect_equal(res1$SE, res2$Est.SE)
+    expect_equal(res1$Wald.stat, (res2$Wald.Stat)^2)
+    expect_equal(res1$Wald.pval, res2$Wald.pval)
     
     seqClose(svd)
 })
@@ -128,18 +136,20 @@ test_that("assocTestSeq2 matches assocTestSeqWindow - Burden, Score, LMM", {
     svd <- .testData()
     grm <- .testGRM(svd)
     nullmod <- GENESIS::fitNullMM(sampleData(svd), outcome="outcome", covars=c("sex", "age"), covMatList=grm, verbose=FALSE)
-    assoc1 <- GENESIS::assocTestSeqWindow(svd, nullmod, window.size=100, window.shift=50, test="Burden", burden.test="Score", verbose=FALSE)
+    assoc1 <- GENESIS::assocTestSeqWindow(svd, nullmod, window.size=100, window.shift=50, test="Burden", burden.test="Score", verbose=FALSE, chromosome=1)
     
     nullmod <- fitNullModel2(svd, outcome="outcome", covars=c("sex", "age"), covMatList=grm, verbose=FALSE)
+    seqSetFilterChrom(svd, include=1, verbose=FALSE)
     iterator <- SeqVarWindowIterator(svd, windowSize=1e5, windowShift=5e4, verbose=FALSE)
     assoc2 <- assocTestSeq2(iterator, nullmod, test="Burden", burden.test="Score", verbose=FALSE)
 
     res1 <- assoc1$results[assoc1$results$dup %in% 0,]
     res2 <- assoc2$results[assoc2$results$n.site > 0,]
-    chk <- function(x) {
-        paste(x$n.site, format(x$Score, digits=4, scientific=FALSE, trim=TRUE), sep="_")
-    }
-    expect_true(setequal(chk(res1), chk(res2)))
+    expect_equal(res1$n.site, res2$n.site)
+    expect_equal(res1$Score, res2$Score)
+    expect_equal(res1$Var, (res2$Score.SE)^2)
+    expect_equal(res1$Score.stat, (res2$Score.Stat)^2)
+    expect_equal(res1$Score.pval, res2$Score.pval)
     
     seqClose(svd)
 })
@@ -147,18 +157,20 @@ test_that("assocTestSeq2 matches assocTestSeqWindow - Burden, Score, LMM", {
 test_that("assocTestSeq2 matches assocTestSeqWindow - Burden, Binary", {
     svd <- .testData()
     nullmod <- GENESIS::fitNullReg(sampleData(svd), outcome="status", covars=c("sex", "age"), family="binomial", verbose=FALSE)
-    assoc1 <- GENESIS::assocTestSeqWindow(svd, nullmod, window.size=100, window.shift=50, test="Burden", burden.test="Score", verbose=FALSE)
+    assoc1 <- GENESIS::assocTestSeqWindow(svd, nullmod, window.size=100, window.shift=50, test="Burden", burden.test="Score", verbose=FALSE, chromosome=1)
     
     nullmod <- fitNullModel2(svd, outcome="status", covars=c("sex", "age"), family="binomial", verbose=FALSE)
+    seqSetFilterChrom(svd, include=1, verbose=FALSE)
     iterator <- SeqVarWindowIterator(svd, windowSize=1e5, windowShift=5e4, verbose=FALSE)
     assoc2 <- assocTestSeq2(iterator, nullmod, test="Burden", burden.test="Score", verbose=FALSE)
 
     res1 <- assoc1$results[assoc1$results$dup %in% 0,]
     res2 <- assoc2$results[assoc2$results$n.site > 0,]
-    chk <- function(x) {
-        paste(x$n.site, format(x$Score, digits=4, scientific=FALSE, trim=TRUE), sep="_")
-    }
-    expect_true(setequal(chk(res1), chk(res2)))
+    expect_equal(res1$n.site, res2$n.site)
+    expect_equal(res1$Score, res2$Score, tolerance=1e-6)
+    expect_equal(res1$Var, (res2$Score.SE)^2, tolerance=1e-6)
+    expect_equal(res1$Score.stat, (res2$Score.Stat)^2, tolerance=1e-6)
+    expect_equal(res1$Score.pval, res2$Score.pval, tolerance=1e-6)
     
     seqClose(svd)
 })
@@ -167,18 +179,20 @@ test_that("assocTestSeq2 matches assocTestSeqWindow - Burden, Binary, LMM", {
     svd <- .testData()
     grm <- .testGRM(svd)
     nullmod <- GENESIS::fitNullMM(sampleData(svd), outcome="status", covars=c("sex", "age"), covMatList=grm, family="binomial", verbose=FALSE)
-    assoc1 <- GENESIS::assocTestSeqWindow(svd, nullmod, window.size=100, window.shift=50, test="Burden", burden.test="Score", verbose=FALSE)
+    assoc1 <- GENESIS::assocTestSeqWindow(svd, nullmod, window.size=100, window.shift=50, test="Burden", burden.test="Score", verbose=FALSE, chromosome=1)
     
     nullmod <- fitNullModel2(svd, outcome="status", covars=c("sex", "age"), covMatList=grm, family="binomial", verbose=FALSE)
+    seqSetFilterChrom(svd, include=1, verbose=FALSE)
     iterator <- SeqVarWindowIterator(svd, windowSize=1e5, windowShift=5e4, verbose=FALSE)
     assoc2 <- assocTestSeq2(iterator, nullmod, test="Burden", burden.test="Score", verbose=FALSE)
 
     res1 <- assoc1$results[assoc1$results$dup %in% 0,]
     res2 <- assoc2$results[assoc2$results$n.site > 0,]
-    chk <- function(x) {
-        paste(x$n.site, format(x$Score, digits=2, scientific=FALSE, trim=TRUE), sep="_")
-    }
-    expect_true(setequal(chk(res1), chk(res2)))
+    expect_equal(res1$n.site, res2$n.site)
+    expect_equal(res1$Score, res2$Score, tolerance=1e-6)
+    expect_equal(res1$Var, (res2$Score.SE)^2, tolerance=1e-6)
+    expect_equal(res1$Score.stat, (res2$Score.Stat)^2, tolerance=1e-6)
+    expect_equal(res1$Score.pval, res2$Score.pval, tolerance=1e-6)
     
     seqClose(svd)
 })
@@ -186,19 +200,19 @@ test_that("assocTestSeq2 matches assocTestSeqWindow - Burden, Binary, LMM", {
 test_that("assocTestSeq2 matches assocTestSeqWindow - SKAT", {
     svd <- .testData()
     nullmod <- GENESIS::fitNullReg(sampleData(svd), outcome="outcome", covars=c("sex", "age"), verbose=FALSE)
-    assoc1 <- GENESIS::assocTestSeqWindow(svd, nullmod, window.size=100, window.shift=50, test="SKAT", verbose=FALSE)
+    assoc1 <- GENESIS::assocTestSeqWindow(svd, nullmod, window.size=100, window.shift=50, test="SKAT", verbose=FALSE, chromosome=1)
     
     nullmod <- fitNullModel2(svd, outcome="outcome", covars=c("sex", "age"), verbose=FALSE)
+    seqSetFilterChrom(svd, include=1, verbose=FALSE)
     iterator <- SeqVarWindowIterator(svd, windowSize=1e5, windowShift=5e4, verbose=FALSE)
     assoc2 <- assocTestSeq2(iterator, nullmod, test="SKAT", verbose=FALSE)
 
     res1 <- assoc1$results[assoc1$results$dup %in% 0,]
     res2 <- assoc2$results[assoc2$results$n.site > 0,]
-    chk <- function(x) {
-        fmt <- function(y) format(y, digits=4, scientific=FALSE, trim=TRUE)
-        paste(x$n.site, fmt(x$Q_0), fmt(x$pval_0), fmt(x$err_0), sep="_")
-    }
-    expect_true(setequal(chk(res1), chk(res2)))
+    expect_equal(res1$n.site, res2$n.site)
+    expect_equal(res1$Q_0, res2$Q_0)
+    expect_equal(res1$pval_0, res2$pval_0)
+    expect_equal(res1$err_0, res2$err_0)
     
     seqClose(svd)
 })
@@ -206,19 +220,19 @@ test_that("assocTestSeq2 matches assocTestSeqWindow - SKAT", {
 test_that("assocTestSeq2 matches assocTestSeqWindow - SKAT, binary", {
     svd <- .testData()
     nullmod <- GENESIS::fitNullReg(sampleData(svd), outcome="status", covars=c("sex", "age"), family="binomial", verbose=FALSE)
-    assoc1 <- GENESIS::assocTestSeqWindow(svd, nullmod, window.size=100, window.shift=50, test="SKAT", verbose=FALSE)
+    assoc1 <- GENESIS::assocTestSeqWindow(svd, nullmod, window.size=100, window.shift=50, test="SKAT", verbose=FALSE, chromosome=1)
     
     nullmod <- fitNullModel2(svd, outcome="status", covars=c("sex", "age"), family="binomial", verbose=FALSE)
+    seqSetFilterChrom(svd, include=1, verbose=FALSE)
     iterator <- SeqVarWindowIterator(svd, windowSize=1e5, windowShift=5e4, verbose=FALSE)
     assoc2 <- assocTestSeq2(iterator, nullmod, test="SKAT", verbose=FALSE)
 
     res1 <- assoc1$results[assoc1$results$dup %in% 0,]
     res2 <- assoc2$results[assoc2$results$n.site > 0,]
-    chk <- function(x) {
-        fmt <- function(y) format(y, digits=4, scientific=FALSE, trim=TRUE)
-        paste(x$n.site, fmt(x$Q_0), fmt(x$pval_0), fmt(x$err_0), sep="_")
-    }
-    expect_true(setequal(chk(res1), chk(res2)))
+    expect_equal(res1$n.site, res2$n.site)
+    expect_equal(res1$Q_0, res2$Q_0, tolerance=1e-6)
+    expect_equal(res1$pval_0, res2$pval_0, tolerance=1e-6)
+    expect_equal(res1$err_0, res2$err_0, tolerance=1e-6)
     
     seqClose(svd)
 })
@@ -227,19 +241,19 @@ test_that("assocTestSeq2 matches assocTestSeqWindow - SKAT, LMM", {
     svd <- .testData()
     grm <- .testGRM(svd)
     nullmod <- GENESIS::fitNullMM(sampleData(svd), outcome="outcome", covars=c("sex", "age"), covMatList=grm, verbose=FALSE)
-    assoc1 <- GENESIS::assocTestSeqWindow(svd, nullmod, window.size=100, window.shift=50, test="SKAT", verbose=FALSE)
+    assoc1 <- GENESIS::assocTestSeqWindow(svd, nullmod, window.size=100, window.shift=50, test="SKAT", verbose=FALSE, chromosome=1)
     
     nullmod <- fitNullModel2(svd, outcome="outcome", covars=c("sex", "age"), covMatList=grm, verbose=FALSE)
+    seqSetFilterChrom(svd, include=1, verbose=FALSE)
     iterator <- SeqVarWindowIterator(svd, windowSize=1e5, windowShift=5e4, verbose=FALSE)
     assoc2 <- assocTestSeq2(iterator, nullmod, test="SKAT", verbose=FALSE)
 
     res1 <- assoc1$results[assoc1$results$dup %in% 0,]
     res2 <- assoc2$results[assoc2$results$n.site > 0,]
-    chk <- function(x) {
-        fmt <- function(y) format(y, digits=4, scientific=FALSE, trim=TRUE)
-        paste(x$n.site, fmt(x$Q_0), fmt(x$pval_0), fmt(x$err_0), sep="_")
-    }
-    expect_true(setequal(chk(res1), chk(res2)))
+    expect_equal(res1$n.site, res2$n.site)
+    expect_equal(res1$Q_0, res2$Q_0)
+    expect_equal(res1$pval_0, res2$pval_0)
+    expect_equal(res1$err_0, res2$err_0)
     
     seqClose(svd)
 })
@@ -248,19 +262,19 @@ test_that("assocTestSeq2 matches assocTestSeqWindow - SKAT, binary, LMM", {
     svd <- .testData()
     grm <- .testGRM(svd)
     nullmod <- GENESIS::fitNullMM(sampleData(svd), outcome="status", covars=c("sex", "age"), covMatList=grm, family="binomial", verbose=FALSE)
-    assoc1 <- GENESIS::assocTestSeqWindow(svd, nullmod, window.size=100, window.shift=50, test="SKAT", verbose=FALSE)
+    assoc1 <- GENESIS::assocTestSeqWindow(svd, nullmod, window.size=100, window.shift=50, test="SKAT", verbose=FALSE, chromosome=1)
     
     nullmod <- fitNullModel2(svd, outcome="status", covars=c("sex", "age"), covMatList=grm, family="binomial", verbose=FALSE)
+    seqSetFilterChrom(svd, include=1, verbose=FALSE)
     iterator <- SeqVarWindowIterator(svd, windowSize=1e5, windowShift=5e4, verbose=FALSE)
     assoc2 <- assocTestSeq2(iterator, nullmod, test="SKAT", verbose=FALSE)
 
     res1 <- assoc1$results[assoc1$results$dup %in% 0,]
     res2 <- assoc2$results[assoc2$results$n.site > 0,]
-    chk <- function(x) {
-        fmt <- function(y) format(y, digits=1, scientific=FALSE, trim=TRUE)
-        paste(x$n.site, fmt(x$Q_0), fmt(x$pval_0), fmt(x$err_0), sep="_")
-    }
-    expect_true(setequal(chk(res1), chk(res2)))
+    expect_equal(res1$n.site, res2$n.site)
+    expect_equal(res1$Q_0, res2$Q_0, tolerance=1e-6)
+    expect_equal(res1$pval_0, res2$pval_0, tolerance=1e-6)
+    expect_equal(res1$err_0, res2$err_0, tolerance=1e-6)
     
     seqClose(svd)
 })
@@ -269,21 +283,19 @@ test_that("assocTestSeq2 matches assocTestSeqWindow - SKAT-O, LMM", {
     svd <- .testData()
     grm <- .testGRM(svd)
     nullmod <- GENESIS::fitNullMM(sampleData(svd), outcome="outcome", covars=c("sex", "age"), covMatList=grm, verbose=FALSE)
-    assoc1 <- GENESIS::assocTestSeqWindow(svd, nullmod, window.size=100, window.shift=50, test="SKAT", rho=c(0,0.5,1), verbose=FALSE)
+    assoc1 <- GENESIS::assocTestSeqWindow(svd, nullmod, window.size=100, window.shift=50, test="SKAT", rho=c(0,0.5,1), verbose=FALSE, chromosome=1)
     
     nullmod <- fitNullModel2(svd, outcome="outcome", covars=c("sex", "age"), covMatList=grm, verbose=FALSE)
+    seqSetFilterChrom(svd, include=1, verbose=FALSE)
     iterator <- SeqVarWindowIterator(svd, windowSize=1e5, windowShift=5e4, verbose=FALSE)
     assoc2 <- assocTestSeq2(iterator, nullmod, test="SKAT", rho=c(0,0.5,1), verbose=FALSE)
 
     res1 <- assoc1$results[assoc1$results$dup %in% 0,]
     res2 <- assoc2$results[assoc2$results$n.site > 0,]
-    chk <- function(x) {
-        fmt <- function(y) format(y, digits=4, scientific=FALSE, trim=TRUE)
-        paste(x$n.site, fmt(x$Q_0), fmt(x$pval_0), fmt(x$err_0),
-              fmt(x$Q_0.5), fmt(x$pval_0.5), fmt(x$err_0.5),
-              fmt(x$Q_1), fmt(x$pval_1), fmt(x$err_1),sep="_")
-    }
-    expect_true(setequal(chk(res1), chk(res2)))
+    expect_equal(res1$n.site, res2$n.site)
+    expect_equal(res1$Q_0, res2$Q_0)
+    expect_equal(res1$pval_0, res2$pval_0)
+    expect_equal(res1$err_0, res2$err_0)
     
     seqClose(svd)
 })

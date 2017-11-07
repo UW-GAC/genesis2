@@ -86,10 +86,10 @@ test_that("assocTestMM2 matches assocTestMM - binary", {
     not1 <- setdiff(assoc2$variant.id, assoc1$snpID)
     assoc2 <- assoc2[!(assoc2$variant.id %in% not1),]
     expect_equal(nrow(assoc1), nrow(assoc2))
-    expect_equal(assoc1$Score, assoc2$Score)
-    expect_equal(assoc1$Var, (assoc2$Score.SE)^2)
-    expect_equal(assoc1$Score.Stat, (assoc2$Score.Stat)^2, tolerance=1e-7)
-    expect_equal(assoc1$Score.pval, assoc2$Score.pval)
+    expect_equal(assoc1$Score, assoc2$Score, tolerance=1e-6)
+    expect_equal(assoc1$Var, (assoc2$Score.SE)^2, tolerance=1e-6)
+    expect_equal(assoc1$Score.Stat, (assoc2$Score.Stat)^2, tolerance=1e-6)
+    expect_equal(assoc1$Score.pval, assoc2$Score.pval, tolerance=1e-6)
     
     seqClose(svd)
 })
