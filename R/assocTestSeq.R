@@ -16,6 +16,9 @@ setMethod("assocTestSeq2",
                    verbose=TRUE) {
 
               # check argument values
+              test <- match.arg(test)
+              burden.test <- match.arg(burden.test)
+              pval.method <- match.arg(pval.method)
 
               # results
               res <- list()
