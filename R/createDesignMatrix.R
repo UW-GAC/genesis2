@@ -3,9 +3,10 @@ setGeneric("createDesignMatrix2", function(x, ...) standardGeneric("createDesign
 
 setMethod("createDesignMatrix2",
           "data.frame",
-          function(x, outcome, covars=NULL) {
+          function(x, outcome, covars=NULL, group.var=NULL) {
 
               if (!is.null(covars)) {
+                  
                   model.formula <- as.formula(paste(outcome, "~", paste(covars, collapse="+")))
                   # allow interactions
                   covars <- unique(unlist(strsplit(covars,"[*:]")))
@@ -16,7 +17,7 @@ setMethod("createDesignMatrix2",
               x <- x[complete.cases(x),,drop=FALSE]
               
               # outcome vector
-              y <- x[,outcome]
+              y <- x[[outcome]]
               # create design matrix    
               X <- model.matrix(model.formula, data=x)
               # check for columns of all the same value (except the intercept)
@@ -25,16 +26,29 @@ setMethod("createDesignMatrix2",
                   message("Covariates ",paste(colnames(X)[dropcol], collapse = ", "), " have only 1 value: they have been removed from the model")
                   X <- X[,!dropcol,drop=FALSE]
               }
-              list(y=y, X=X)
+
+              # group index
+              if (!is.null(group.var)) {
+                  group.idx <- .indexList(x[[group.var]])
+              } else {
+                  group.idx <- NULL
+              }
+              
+              list(y=y, X=X, group.idx=group.idx)
           })
 
 setMethod("createDesignMatrix2",
           "AnnotatedDataFrame",
-          function(x, outcome, covars=NULL, sample.id=NULL) {
+          function(x, outcome, covars=NULL, group.var=NULL, sample.id=NULL) {
               x <- pData(x)
               if (!is.null(sample.id)) {
                   x <- x[x$sample.id %in% sample.id,]
               }
               rownames(x) <- x$sample.id
-              createDesignMatrix2(x, outcome, covars)
+              createDesignMatrix2(x, outcome, covars, group.var)
           })
+
+.indexList <- function(x) {
+    groups <- unique(x)
+    lapply(setNames(groups, groups), function(g) which(x == g))
+}

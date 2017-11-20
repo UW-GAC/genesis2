@@ -8,21 +8,10 @@ setMethod("fitNullModel2",
                    covMatList = NULL,
                    group.var = NULL,
                    sample.id = NULL,
-                   family = "gaussian",
-                   start = NULL,
-                   AIREML.tol = 1e-6,
-                   maxIter = 100,
-                   dropZeros = TRUE,
-                   verbose = TRUE) {
-              desmat <- createDesignMatrix2(x, outcome, covars, sample.id)
-              if (!is.null(group.var)) {
-                  group.idx <- .indexList(x[[group.var]])
-              } else {
-                  group.idx <- NULL
-              }
-              fitNullModel(y=desmat$y, X=desmat$X, covMatList=covMatList, group.idx=group.idx,
-                           family=family, start=start, AIREML.tol=AIREML.tol, maxIter=maxIter,
-                           dropZeros=dropZeros, verbose=verbose)
+                   ...) {
+              desmat <- createDesignMatrix2(x, outcome, covars, group.var, sample.id)
+              fitNullModel(y=desmat$y, X=desmat$X, covMatList=covMatList,
+                           group.idx=desmat$group.idx, ...)
           })
 
 setMethod("fitNullModel2",
@@ -30,8 +19,3 @@ setMethod("fitNullModel2",
           function(x, ...) {
               fitNullModel2(sampleData(x), ...)
           })
-
-.indexList <- function(x) {
-    groups <- unique(x)
-    lapply(setNames(groups, groups), function(g) which(x == g))
-}

@@ -50,6 +50,19 @@ test_that("index list", {
     expect_equal(list(a=1:3), .indexList(rep("a", 3)))
 })
 
+test_that("group.var", {
+    dat <- data.frame(sample.id=sample(letters, 10),
+                      a=rnorm(10),
+                      b=c(rep("a",5), rep("b", 5)),
+                      stringsAsFactors=FALSE)
+    dat <- AnnotatedDataFrame(dat)
+    keep <- dat$sample.id[c(TRUE,FALSE)]
+    nm <- fitNullModel2(dat, outcome="a", covars="b", group.var="b", sample.id=keep, verbose=FALSE)
+    expect_equal(rownames(nm$model.matrix), keep)
+    expect_equal(nm$workingY, dat$a[c(TRUE,FALSE)])
+    expect_equal(nm$group.idx, list(a=1:3, b=4:5))
+})
+
 
 
 test_that("fitNullMM2 matches fitNulMM", {
