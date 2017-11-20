@@ -29,7 +29,7 @@ setMethod("assocTestSeq2",
                   
                   var.info <- variantInfo(gdsobj, alleles=FALSE, expanded=TRUE)
                   
-                  geno <- expandedAltDosage(gdsobj)
+                  geno <- expandedAltDosage(gdsobj, use.names=FALSE)
                   
                   # allele frequency
                   freq <- .alleleFreq(gdsobj, geno)
