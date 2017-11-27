@@ -26,10 +26,6 @@ setMethod("assocTestSeq2",
               i <- 1
               iterate <- TRUE
               while (iterate) {
-                  test <- match.arg(test)
-                  burden.test <- match.arg(burden.test)
-                  pval.method <- match.arg(pval.method)
-                  
                   var.info <- variantInfo(gdsobj, alleles=FALSE, expanded=TRUE)
                   
                   geno <- expandedAltDosage(gdsobj, use.names=FALSE)
