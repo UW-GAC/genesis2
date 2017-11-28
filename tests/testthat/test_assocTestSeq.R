@@ -50,7 +50,7 @@ test_that("user weights", {
     assoc <- assocTestSeq2(iterator, nullmod, weight.user="weights", verbose=FALSE)
     tmp <- do.call(rbind, assoc$variantInfo)[,c("variant.id", "weight")]
     tmp <- tmp[!duplicated(tmp$variant.id),]
-    restoreFilter(svd)
+    seqSetFilterChrom(svd, include=22, verbose=FALSE)
     expect_equal(tmp$weight, variantData(svd)$weight)
     seqClose(svd)
 })

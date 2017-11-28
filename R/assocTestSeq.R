@@ -7,7 +7,7 @@ setGeneric("assocTestSeq2", function(gdsobj, ...) standardGeneric("assocTestSeq2
 ##  - why do this instead of just filtering?
 
 setMethod("assocTestSeq2",
-          "SeqVarData",
+          "SeqVarIterator",
           function(gdsobj, nullModel,
                    weight.beta=c(1,1), weight.user=NULL,
                    test=c("Burden", "SKAT"),

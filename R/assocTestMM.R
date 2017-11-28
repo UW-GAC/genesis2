@@ -3,7 +3,7 @@ setGeneric("assocTestMM2", function(gdsobj, ...) standardGeneric("assocTestMM2")
 ## do we want the ivars.return.betaCov option?
 ## do we want to make imputing to the mean optional?
 setMethod("assocTestMM2",
-          "SeqVarData",
+          "SeqVarIterator",
           function(gdsobj, nullModel, test = c("Wald", "Score"), ivars = NULL, verbose=TRUE) {
               test <- match.arg(test)
               
