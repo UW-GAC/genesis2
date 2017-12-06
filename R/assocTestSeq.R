@@ -8,7 +8,7 @@ setGeneric("assocTestSeq2", function(gdsobj, ...) standardGeneric("assocTestSeq2
 
 setMethod("assocTestSeq2",
           "SeqVarIterator",
-          function(gdsobj, nullModel,
+          function(gdsobj, nullModel, AF.max=1,
                    weight.beta=c(1,1), weight.user=NULL,
                    test=c("Burden", "SKAT"),
                    burden.test=c("Score", "Wald"), rho=0,
@@ -20,6 +20,9 @@ setMethod("assocTestSeq2",
               burden.test <- match.arg(burden.test)
               pval.method <- match.arg(pval.method)
 
+              # filter samples to match null model
+              .setFilterNullModel(gdsobj, nullModel, verbose=verbose)
+              
               # results
               res <- list()
               res.var <- list()
@@ -35,10 +38,12 @@ setMethod("assocTestSeq2",
 
                   # exclude monomorphic variants
                   mono <- freq %in% c(0,1)
-                  if (any(mono)) {
-                      var.info <- var.info[!mono,,drop=FALSE]
-                      geno <- geno[,!mono,drop=FALSE]
-                      freq <- freq[!mono]
+                  # exclude variants with freq > max
+                  excl <-  mono | freq > AF.max
+                  if (any(excl)) {
+                      var.info <- var.info[!excl,,drop=FALSE]
+                      geno <- geno[,!excl,drop=FALSE]
+                      freq <- freq[!excl]
                   }
 
                   # number of variant sites
@@ -60,7 +65,7 @@ setMethod("assocTestSeq2",
                   } else {
                       # user supplied weights
                       weight <- variantData(gdsobj)[[weight.user]][expandedVariantIndex(gdsobj)]
-                      weight <- weight[!mono]
+                      weight <- weight[!excl]
                   }
                   
                   res[[i]] <- data.frame(n.site, n.alt, n.sample.alt)

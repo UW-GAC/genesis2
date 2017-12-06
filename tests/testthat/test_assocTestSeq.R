@@ -55,6 +55,32 @@ test_that("user weights", {
     seqClose(svd)
 })
 
+test_that("exclude monomorphs", {
+    svd <- .testData()
+    iterator <- SeqVarBlockIterator(svd, verbose=FALSE)
+    nullmod <- fitNullModel2(iterator, outcome="outcome", covars=c("sex", "age"), verbose=FALSE)
+    freq <- seqAlleleFreq(svd)
+    ind <- which(!(freq %in% c(0,1)))
+    n <- length(ind)
+    assoc <- assocTestSeq2(iterator, nullmod, verbose=FALSE)
+    expect_equal(assoc$results$n.site, n)
+    expect_equal(assoc$variantInfo[[1]]$variant.id, ind)
+    seqClose(svd)
+})
+
+test_that("exclude common", {
+    svd <- .testData()
+    iterator <- SeqVarBlockIterator(svd, verbose=FALSE)
+    nullmod <- fitNullModel2(iterator, outcome="outcome", covars=c("sex", "age"), verbose=FALSE)
+    freq <- seqAlleleFreq(svd, ref.allele=1)
+    ind <- which(!(freq %in% c(0,1)) & freq <= 0.05)
+    n <- length(ind)
+    assoc <- assocTestSeq2(iterator, nullmod, AF.max=0.05, verbose=FALSE)
+    expect_equal(assoc$results$n.site, n)
+    expect_equal(assoc$variantInfo[[1]]$variant.id, ind)
+    seqClose(svd)
+})
+
 
 test_that("assocTestSeq2 matches assocTestSeqWindow - Burden, Wald", {
     svd <- .testData()
