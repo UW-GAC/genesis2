@@ -52,3 +52,7 @@
     freq <- pmin(freq, 1-freq)
     dbeta(freq, weight.beta[1], weight.beta[2])
 }
+
+.setFilterNullModel <- function(gdsobj, nullModel, verbose=TRUE) {
+    seqSetFilter(gdsobj, sample.id=rownames(nullModel$model.matrix), verbose=verbose)
+}

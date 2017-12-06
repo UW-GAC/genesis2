@@ -6,6 +6,9 @@ setMethod("assocTestMM2",
           "SeqVarIterator",
           function(gdsobj, nullModel, test = c("Wald", "Score"), ivars = NULL, verbose=TRUE) {
               test <- match.arg(test)
+
+              # filter samples to match null model
+              .setFilterNullModel(gdsobj, nullModel, verbose=verbose)
               
               # results
               res <- list()
