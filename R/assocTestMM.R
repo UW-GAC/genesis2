@@ -13,6 +13,7 @@ setMethod("assocTestMM2",
               
               # results
               res <- list()
+              n.iter <- length(variantFilter(gdsobj))
               i <- 1
               iterate <- TRUE
               while (iterate) {
@@ -37,8 +38,12 @@ setMethod("assocTestMM2",
                   assoc[freq %in% c(0,1),] <- NA
 
                   res[[i]] <- cbind(var.info, n.obs, freq, assoc)
+                  
+                  if (verbose & i %% 100 == 0) {
+                      message(paste("Iteration", i , "of", n.iter, "completed"))
+                  }
                   i <- i + 1
-                  iterate <- iterateFilter(gdsobj, verbose=verbose)
+                  iterate <- iterateFilter(gdsobj, verbose=FALSE)
               }
 
               do.call(rbind, res)

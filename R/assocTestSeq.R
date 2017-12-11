@@ -28,6 +28,7 @@ setMethod("assocTestSeq2",
               res <- list()
               res.var <- list()
               i <- 1
+              n.iter <- length(variantFilter(gdsobj))
               iterate <- TRUE
               while (iterate) {
                   var.info <- variantInfo(gdsobj, alleles=FALSE, expanded=TRUE)
@@ -85,8 +86,11 @@ setMethod("assocTestSeq2",
                       res[[i]] <- cbind(res[[i]], assoc)
                   }
 
+                  if (verbose & i %% 100 == 0) {
+                      message(paste("Iteration", i , "of", n.iter, "completed"))
+                  }
                   i <- i + 1
-                  iterate <- iterateFilter(gdsobj, verbose=verbose)
+                  iterate <- iterateFilter(gdsobj, verbose=FALSE)
               }
 
               list(results=bind_rows(res), variantInfo=res.var)
