@@ -43,7 +43,7 @@ test_that("assocTestMM2 matches assocTestMM - Wald", {
     assoc2 <- assoc2[!(assoc2$variant.id %in% not1),]
     expect_equal(nrow(assoc1), nrow(assoc2))
     expect_equal(assoc1$snpID, assoc2$variant.id)
-    expect_equal(assoc1$chr, assoc2$chromosome)
+    expect_equal(assoc1$chr, assoc2$chr)
     expect_equal(assoc1$MAF, pmin(assoc2$freq, 1-assoc2$freq))
     expect_equal(assoc1$Est, assoc2$Est)
     expect_equal(assoc1$SE, assoc2$Est.SE)
