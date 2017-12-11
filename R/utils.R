@@ -53,6 +53,13 @@
     dbeta(freq, weight.beta[1], weight.beta[2])
 }
 
+.checkNullModel <- function(nullModel) {
+    if (!is(nullModel, "GENESIS.nullModelPrep")) {
+        nullModel <- nullModelTestPrep(nullModel)
+    }
+    nullModel
+}
+
 .setFilterNullModel <- function(gdsobj, nullModel, verbose=TRUE) {
-    seqSetFilter(gdsobj, sample.id=rownames(nullModel$model.matrix), verbose=verbose)
+    seqSetFilter(gdsobj, sample.id=nullModel$sample.id, verbose=verbose)
 }

@@ -8,9 +8,8 @@ setMethod("assocTestMM2",
               test <- match.arg(test)
 
               # filter samples to match null model
+              nullModel <- .checkNullModel(nullModel)
               .setFilterNullModel(gdsobj, nullModel, verbose=verbose)
-              
-              nullPrep <- nullModelTestPrep(nullModel)
               
               # results
               res <- list()
@@ -33,7 +32,7 @@ setMethod("assocTestMM2",
                   }
 
                   # do the test
-                  assoc <- testGenoSingleVar(nullPrep, G=geno, E=ivars, test=test)
+                  assoc <- testGenoSingleVar(nullModel, G=geno, E=ivars, test=test)
                   # set monomorphs to NA - do we want to skip testing these to save time?
                   assoc[freq %in% c(0,1),] <- NA
 

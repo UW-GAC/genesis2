@@ -21,9 +21,8 @@ setMethod("assocTestSeq2",
               pval.method <- match.arg(pval.method)
 
               # filter samples to match null model
+              nullModel <- .checkNullModel(nullModel)
               .setFilterNullModel(gdsobj, nullModel, verbose=verbose)
-              
-              nullPrep <- nullModelTestPrep(nullModel)
               
               # results
               res <- list()
@@ -80,7 +79,7 @@ setMethod("assocTestSeq2",
                       }
 
                       # do the test
-                      assoc <- testVariantSet(nullPrep, G=geno, weights=weight, test=test, 
+                      assoc <- testVariantSet(nullModel, G=geno, weights=weight, test=test, 
                                               burden.test=burden.test, rho=rho,
                                               pval.method=pval.method)
                       res[[i]] <- cbind(res[[i]], assoc)
