@@ -1,7 +1,6 @@
 context("rare variant tests")
 library(SeqVarTools)
 library(GenomicRanges)
-library(Biobase)
 
 test_that("window", {
     svd <- .testData()
@@ -12,17 +11,21 @@ test_that("window", {
     nwin <- length(variantRanges(iterator))
     expect_equal(nrow(assoc$results), nwin)
     expect_equal(length(assoc$variantInfo), nwin)
+    expect_true(all(assoc$results$chr == 1))
     seqClose(svd)
 })
 
 test_that("ranges", {
     svd <- .testData()
     gr <- GRanges(seqnames=rep(1,3), ranges=IRanges(start=c(1e6, 2e6, 3e6), width=1e6))
+    names(gr) <- letters[1:3]
     iterator <- SeqVarRangeIterator(svd, variantRanges=gr, verbose=FALSE)
     nullmod <- fitNullModel2(iterator, outcome="outcome", covars=c("sex", "age"), verbose=FALSE)
     assoc <- assocTestSeq2(iterator, nullmod, verbose=FALSE)
     expect_equal(nrow(assoc$results), length(gr))
     expect_equal(length(assoc$variantInfo), length(gr))
+    expect_equal(rownames(assoc$results), letters[1:3])
+    expect_equal(names(assoc$variantInfo), letters[1:3])
     seqClose(svd)
 })
 
@@ -31,11 +34,14 @@ test_that("list", {
     gr <- GRangesList(
         GRanges(seqnames=rep(1,2), ranges=IRanges(start=c(1e6, 3e6), width=1e6)),
         GRanges(seqnames=rep(1,2), ranges=IRanges(start=c(3e6, 34e6), width=1e6)))
+    names(gr) <- letters[1:2]
     iterator <- SeqVarListIterator(svd, variantRanges=gr, verbose=FALSE)
     nullmod <- fitNullModel2(iterator, outcome="outcome", covars=c("sex", "age"), verbose=FALSE)
     assoc <- assocTestSeq2(iterator, nullmod, verbose=FALSE)
     expect_equal(nrow(assoc$results), length(gr))
     expect_equal(length(assoc$variantInfo), length(gr))
+    expect_equal(rownames(assoc$results), letters[1:2])
+    expect_equal(names(assoc$variantInfo), letters[1:2])
     seqClose(svd)
 })
 

@@ -74,3 +74,47 @@
     var.match <- inner_join(var.info, var.sel, by=match.cols)
     var.match$n
 }
+
+
+.addNames <- function(iterator, x) {
+    gr <- variantRanges(iterator)
+    rownames(x$results) <- names(gr)
+    names(x$variantInfo) <- names(gr)
+    x
+}
+
+.addWindows <- function(iterator, x) {
+    windows <- variantRanges(iterator)
+    win.df <- data.frame(chr=as.character(GenomicRanges::seqnames(windows)),
+                         start=BiocGenerics::start(windows),
+                         end=BiocGenerics::end(windows),
+                         stringsAsFactors=FALSE)
+    x$results <- cbind(win.df, x$results)
+    x
+}
+
+setGeneric(".annotateAssoc", function(gdsobj, x) standardGeneric(".annotateAssoc"))
+
+setMethod(".annotateAssoc",
+          "SeqVarWindowIterator",
+          function(gdsobj, x) {
+              .addWindows(gdsobj, x)
+          })
+
+setMethod(".annotateAssoc",
+          "SeqVarRangeIterator",
+          function(gdsobj, x) {
+              .addNames(gdsobj, x)
+          })
+
+setMethod(".annotateAssoc",
+          "SeqVarListIterator",
+          function(gdsobj, x) {
+              .addNames(gdsobj, x)
+          })
+
+setMethod(".annotateAssoc",
+          "SeqVarBlockIterator",
+          function(gdsobj, x) {
+              x
+          })

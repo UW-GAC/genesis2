@@ -101,5 +101,6 @@ setMethod("assocTestSeq2",
                   iterate <- iterateFilter(gdsobj, verbose=FALSE)
               }
 
-              list(results=bind_rows(res), variantInfo=res.var)
+              res <- list(results=bind_rows(res), variantInfo=res.var)
+              .annotateAssoc(gdsobj, res)
           })
