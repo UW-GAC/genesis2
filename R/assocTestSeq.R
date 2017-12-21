@@ -23,7 +23,10 @@ setMethod("assocTestSeq2",
               # filter samples to match null model
               nullModel <- .checkNullModel(nullModel)
               .setFilterNullModel(gdsobj, nullModel, verbose=verbose)
-              
+
+              # do we need to match on alleles?
+              match.alleles <- any(c("ref", "alt") %in% names(mcols(currentRanges(gdsobj))))
+
               # results
               res <- list()
               res.var <- list()
@@ -31,13 +34,18 @@ setMethod("assocTestSeq2",
               n.iter <- length(variantFilter(gdsobj))
               iterate <- TRUE
               while (iterate) {
-                  var.info <- variantInfo(gdsobj, alleles=FALSE, expanded=TRUE)
+                  var.info <- variantInfo(gdsobj, alleles=match.alleles, expanded=TRUE)
                   
                   geno <- expandedAltDosage(gdsobj, use.names=FALSE)
-                  
+
+                  if (match.alleles) {
+                      index <- .matchAlleles(gdsobj, var.info)
+                      var.info <- var.info[index,,drop=FALSE]
+                      geno <- geno[,index,drop=FALSE]
+                  }
+
                   # allele frequency
                   freq <- .alleleFreq(gdsobj, geno)
-
                   # exclude monomorphic variants
                   mono <- freq %in% c(0,1)
                   # exclude variants with freq > max

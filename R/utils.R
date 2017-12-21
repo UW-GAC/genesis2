@@ -63,3 +63,14 @@
 .setFilterNullModel <- function(gdsobj, nullModel, verbose=TRUE) {
     seqSetFilter(gdsobj, sample.id=nullModel$sample.id, verbose=verbose)
 }
+
+.matchAlleles <- function(gdsobj, var.info) {
+    var.info$n <- 1:nrow(var.info)
+    var.sel <- as.data.frame(currentRanges(gdsobj))
+    var.sel$seqnames <- as.character(var.sel$seqnames)
+    match.cols <- c("chr"="seqnames", "pos"="start")
+    if ("ref" %in% names(var.sel)) match.cols <- c(match.cols, "ref"="ref")
+    if ("alt" %in% names(var.sel)) match.cols <- c(match.cols, "alt"="alt")
+    var.match <- inner_join(var.info, var.sel, by=match.cols)
+    var.match$n
+}
