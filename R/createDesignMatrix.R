@@ -5,8 +5,14 @@ setMethod("createDesignMatrix2",
           "data.frame",
           function(x, outcome, covars=NULL, group.var=NULL) {
 
+              # group index
+              if (!is.null(group.var)) {
+                  group.idx <- .indexList(x[[group.var]])
+              } else {
+                  group.idx <- NULL
+              }
+              
               if (!is.null(covars)) {
-                  
                   model.formula <- as.formula(paste(outcome, "~", paste(covars, collapse="+")))
                   # allow interactions
                   covars <- unique(unlist(strsplit(covars,"[*:]")))
@@ -27,13 +33,6 @@ setMethod("createDesignMatrix2",
                   X <- X[,!dropcol,drop=FALSE]
               }
 
-              # group index
-              if (!is.null(group.var)) {
-                  group.idx <- .indexList(x[[group.var]])
-              } else {
-                  group.idx <- NULL
-              }
-              
               list(y=y, X=X, group.idx=group.idx)
           })
 
@@ -41,10 +40,11 @@ setMethod("createDesignMatrix2",
           "AnnotatedDataFrame",
           function(x, outcome, covars=NULL, group.var=NULL, sample.id=NULL) {
               x <- pData(x)
-              if (!is.null(sample.id)) {
-                  x <- x[x$sample.id %in% sample.id,]
-              }
               rownames(x) <- x$sample.id
+              if (!is.null(sample.id)) {
+                  stopifnot(all(sample.id %in% x$sample.id))
+                  x <- x[as.character(sample.id),]
+              }
               createDesignMatrix2(x, outcome, covars, group.var)
           })
 
