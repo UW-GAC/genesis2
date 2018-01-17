@@ -22,6 +22,18 @@ test_that("assocTestMM2 - sample selection", {
     seqClose(svd)
 })
 
+test_that("assocTestMM2 - reorder samples", {
+    svd <- .testData()
+    samp <- sample(sampleData(svd)$sample.id, 50)
+    iterator <- SeqVarBlockIterator(svd, variantBlock=500, verbose=FALSE)
+    nullmod <- fitNullModel2(iterator, outcome="outcome", covars=c("sex", "age"), sample.id=samp, verbose=FALSE)
+    expect_equal(nrow(nullmod$model.matrix), 50)
+    expect_equal(nullmod$sample.id, samp)
+    assoc <- assocTestMM2(iterator, nullmod, verbose=FALSE)
+    expect_equal(max(assoc$n.obs), 50)
+    seqClose(svd)
+})
+
 
 test_that("assocTestMM2 matches regression", {
     svd <- .testData()
