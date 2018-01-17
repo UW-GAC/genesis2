@@ -60,8 +60,11 @@
     nullModel
 }
 
+# set a sample filter, and return the index to put filtered samples
+# in the same order as the null model
 .setFilterNullModel <- function(gdsobj, nullModel, verbose=TRUE) {
     seqSetFilter(gdsobj, sample.id=nullModel$sample.id, verbose=verbose)
+    match(nullModel$sample.id, seqGetData(gdsobj, "sample.id"))
 }
 
 .matchAlleles <- function(gdsobj, var.info) {

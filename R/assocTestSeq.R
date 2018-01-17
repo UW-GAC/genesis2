@@ -22,7 +22,7 @@ setMethod("assocTestSeq2",
 
               # filter samples to match null model
               nullModel <- .checkNullModel(nullModel)
-              .setFilterNullModel(gdsobj, nullModel, verbose=verbose)
+              sample.index <- .setFilterNullModel(gdsobj, nullModel, verbose=verbose)
 
               # do we need to match on alleles?
               match.alleles <- any(c("ref", "alt") %in% names(mcols(currentRanges(gdsobj))))
@@ -36,7 +36,7 @@ setMethod("assocTestSeq2",
               while (iterate) {
                   var.info <- variantInfo(gdsobj, alleles=match.alleles, expanded=TRUE)
                   
-                  geno <- expandedAltDosage(gdsobj, use.names=FALSE)
+                  geno <- expandedAltDosage(gdsobj, use.names=FALSE)[sample.index,]
 
                   if (match.alleles) {
                       index <- .matchAlleles(gdsobj, var.info)

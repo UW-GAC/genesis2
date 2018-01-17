@@ -41,7 +41,30 @@ test_that("null model", {
     keep <- dat$sample.id[c(TRUE,FALSE)]
     nm <- fitNullModel2(dat, outcome="a", covars="b", sample.id=keep, verbose=FALSE)
     expect_equal(rownames(nm$model.matrix), keep)
+    expect_equal(nm$sample.id, keep)
     expect_equal(nm$workingY, dat$a[c(TRUE,FALSE)])
+})
+
+test_that("null model - covMatList", {
+    dat <- data.frame(sample.id=sample(letters, 10),
+                      a=rnorm(10),
+                      b=c(rep("a",5), rep("b", 5)),
+                      stringsAsFactors=FALSE)
+    dat <- AnnotatedDataFrame(dat)
+    covMat <- crossprod(matrix(rnorm(100,sd=0.05),10,10))
+    dimnames(covMat) <- list(dat$sample.id, dat$sample.id)
+    nm <- fitNullModel2(dat, outcome="a", covars="b", covMatList=covMat, verbose=FALSE)
+    expect_equal(nm$sample.id, dat$sample.id)
+    expect_equal(nm$workingY, dat$a)
+})
+
+test_that("null model from data.frame", {
+    dat <- data.frame(a=rnorm(10),
+                      b=c(rep("a",5), rep("b", 5)),
+                      stringsAsFactors=FALSE)
+    nm <- fitNullModel2(dat, outcome="a", covars="b", verbose=FALSE)
+    expect_equal(nm$workingY, dat$a)
+    expect_equal(nm$sample.id, as.character(1:10))
 })
 
 test_that("index list", {
@@ -63,120 +86,31 @@ test_that("group.var", {
     expect_equal(nm$group.idx, list(a=1:3, b=4:5))
 })
 
+test_that("change sample order", {
+    dat <- data.frame(sample.id=sample(letters, 10),
+                      a=rnorm(10),
+                      b=c(rep("a",5), rep("b", 5)),
+                      stringsAsFactors=FALSE)
+    dat <- AnnotatedDataFrame(dat)
+    covMat <- crossprod(matrix(rnorm(100,sd=0.05),10,10))
+    
+    keep <- rev(dat$sample.id[c(TRUE,FALSE)])
+    dm <- createDesignMatrix2(dat, outcome="a", covars="b", sample.id=keep)
+    expect_equal(dm$y, rev(dat$a[c(TRUE,FALSE)]))
+    expect_equal(rownames(dm$X), keep)
 
+    expect_warning(newCovMat <- .orderSamples(covMat, dat$sample.id, keep), "no dimnames")
+    dimnames(covMat) <- list(dat$sample.id, dat$sample.id)
+    expect_equal(newCovMat, covMat[keep,keep])
+    nm <- fitNullModel2(dat, outcome="a", covars="b", group.var="b", covMatList=covMat, sample.id=keep, verbose=FALSE)
+    expect_equal(nm$sample.id, keep)
 
-test_that("fitNullMM2 matches fitNulMM", {
-    library(SeqVarTools)
-    library(Biobase)
-    svd <- .testData()
-    grm <- .testGRM(svd)
-    lmm.genesis <- GENESIS::fitNullMM(sampleData(svd), outcome="outcome", covars=c("sex", "age"), covMatList=grm, verbose=FALSE)
-    nullmod <- fitNullModel2(svd, outcome="outcome", covars=c("sex", "age"), covMatList=grm, verbose=FALSE)
+    dimnames(covMat) <- list(1:10, 1:10)
+    expect_error(newCovMat <- .orderSamples(covMat, dat$sample.id, keep))
 
-    expect_true(all(abs(nullmod$fixef - lmm.genesis$fixef) < 1e-9))
-    expect_true(all(abs(nullmod$betaCov - lmm.genesis$betaCov) < 1e-9))
-    expect_true(all(abs(nullmod$resid.marginal - lmm.genesis$resid.response) < 1e-9))
-    expect_true(all(abs(nullmod$logLik - lmm.genesis$logLik) < 1e-9))
-    expect_true(all(abs(nullmod$logLikR - lmm.genesis$logLikR) < 1e-9))
-    expect_true(all(abs(nullmod$AIC - lmm.genesis$AIC) < 1e-9))
-    expect_true(all(nullmod$workingY == lmm.genesis$workingY))
-    expect_true(all(nullmod$model.matrix == lmm.genesis$model.matrix))
-    expect_true(all(abs(nullmod$varComp - lmm.genesis$varComp) < 1e-9))
-    expect_true(all(abs(nullmod$varCompCov - lmm.genesis$varCompCov) < 1e-9)) 
-    expect_equal(nullmod$family$family, lmm.genesis$family$family)
-    expect_true(all(nullmod$zeroFLAG == lmm.genesis$zeroFLAG))
-    expect_true(all(abs(nullmod$cholSigmaInv - lmm.genesis$cholSigmaInv) < 1e-9))
-    expect_true(all(abs(nullmod$RSS - lmm.genesis$RSS) < 1e-9))
-
-    seqClose(svd)
-})
-
-test_that("fitNullMM2 matches fitNulMM - group", {
-    library(SeqVarTools)
-    library(Biobase)
-    svd <- .testData()
-    grm <- .testGRM(svd)
-    lmm.genesis <- GENESIS::fitNullMM(sampleData(svd), outcome="outcome", covars=c("sex", "age"), covMatList=grm, group.var="status", verbose=FALSE)
-    nullmod <- fitNullModel2(svd, outcome="outcome", covars=c("sex", "age"), covMatList=grm, group.var="status", verbose=FALSE)
-
-    expect_true(all(abs(nullmod$fixef - lmm.genesis$fixef) < 1e-9))
-    expect_true(all(abs(nullmod$betaCov - lmm.genesis$betaCov) < 1e-9))
-    expect_true(all(abs(nullmod$resid.marginal - lmm.genesis$resid.response) < 1e-9))
-    expect_true(all(abs(nullmod$logLik - lmm.genesis$logLik) < 1e-9))
-    expect_true(all(abs(nullmod$logLikR - lmm.genesis$logLikR) < 1e-9))
-    expect_true(all(abs(nullmod$AIC - lmm.genesis$AIC) < 1e-9))
-    expect_true(all(nullmod$workingY == lmm.genesis$workingY))
-    expect_true(all(nullmod$model.matrix == lmm.genesis$model.matrix))
-    expect_true(all(abs(nullmod$varComp - lmm.genesis$varComp) < 1e-9))
-    expect_equal(nullmod$varCompCov, lmm.genesis$varCompCov) 
-    expect_equal(nullmod$family$family, lmm.genesis$family$family)
-    expect_true(all(nullmod$zeroFLAG == lmm.genesis$zeroFLAG))
-    expect_true(all(abs(nullmod$cholSigmaInv - lmm.genesis$cholSigmaInv) < 1e-9))
-    expect_true(all(abs(nullmod$RSS - lmm.genesis$RSS) < 1e-9))
-
-    seqClose(svd)
-})
-
-test_that("fitNullMM2 matches fitNulMM - binary", {
-    library(SeqVarTools)
-    library(Biobase)
-    svd <- .testData()
-    grm <- .testGRM(svd)
-    lmm.genesis <- GENESIS::fitNullMM(sampleData(svd), outcome="status", covars=c("sex", "age"), covMatList=grm, family="binomial", verbose=FALSE)
-    nullmod <- fitNullModel2(svd, outcome="status", covars=c("sex", "age"), covMatList=grm, family="binomial", verbose=FALSE)
-
-    expect_true(all(abs(nullmod$fixef - lmm.genesis$fixef) < 1e-5))
-    expect_true(all(abs(nullmod$betaCov - lmm.genesis$betaCov) < 1e-5))
-    expect_true(all(abs(nullmod$resid.marginal - lmm.genesis$resid.response) < 1e-5))
-    expect_true(all(abs(nullmod$logLik - lmm.genesis$logLik) < 1e-5))
-    expect_true(all(abs(nullmod$logLikR - lmm.genesis$logLikR) < 1e-5))
-    expect_true(all(abs(nullmod$AIC - lmm.genesis$AIC) < 1e-5))
-    expect_true(all(abs(nullmod$workingY - lmm.genesis$workingY) < 1e-5))
-    expect_true(all(nullmod$model.matrix == lmm.genesis$model.matrix))
-    expect_true(all(abs(nullmod$varComp - lmm.genesis$varComp) < 1e-5))
-    expect_true(all(abs(nullmod$varCompCov - lmm.genesis$varCompCov) < 1e-5)) 
-    expect_equal(nullmod$family$family, lmm.genesis$family$family)
-    expect_true(all(nullmod$zeroFLAG == lmm.genesis$zeroFLAG))
-    expect_true(all(abs(nullmod$cholSigmaInv - lmm.genesis$cholSigmaInv) < 1e-5))
-    #expect_true(all(abs(nullmod$RSS - lmm.genesis$RSS) < 1e-5))
-
-    seqClose(svd)
-})
-
-test_that("fitNullMM2 matches fitNullReg", {
-    library(SeqVarTools)
-    library(Biobase)
-    svd <- .testData()
-    lmm.genesis <- GENESIS::fitNullReg(sampleData(svd), outcome="outcome", covars=c("sex", "age"), verbose=FALSE)
-    nullmod <- fitNullModel2(svd, outcome="outcome", covars=c("sex", "age"), verbose=FALSE)
-
-    expect_true(all(abs(nullmod$fixef - lmm.genesis$fixef) < 1e-9))
-    expect_true(all(abs(nullmod$betaCov - lmm.genesis$betaCov) < 1e-9))
-    expect_true(all(abs(nullmod$resid.marginal - lmm.genesis$resid.response) < 1e-9))
-    expect_true(all(abs(nullmod$logLik - lmm.genesis$logLik) < 1e-9))
-    expect_true(all(abs(nullmod$AIC - lmm.genesis$AIC) < 1e-9))
-    expect_true(all(nullmod$workingY == lmm.genesis$workingY))
-    expect_true(all(nullmod$model.matrix == lmm.genesis$model.matrix))
-    expect_equal(nullmod$family$family, lmm.genesis$family$family)
-
-    seqClose(svd)
-})
-
-test_that("fitNullMM2 matches fitNullReg - binary", {
-    library(SeqVarTools)
-    library(Biobase)
-    svd <- .testData()
-    lmm.genesis <- GENESIS::fitNullReg(sampleData(svd), outcome="status", covars=c("sex", "age"), family="binomial", verbose=FALSE)
-    nullmod <- fitNullModel2(svd, outcome="status", covars=c("sex", "age"), family="binomial", verbose=FALSE)
-
-    expect_true(all(abs(nullmod$fixef - lmm.genesis$fixef) < 1e-9))
-    expect_true(all(abs(nullmod$betaCov - lmm.genesis$betaCov) < 1e-9))
-    expect_true(all(abs(nullmod$resid.marginal - lmm.genesis$resid.response) < 1e-9))
-    expect_true(all(abs(nullmod$logLik - lmm.genesis$logLik) < 1e-9))
-    expect_true(all(abs(nullmod$AIC - lmm.genesis$AIC) < 1e-9))
-    expect_true(all(nullmod$workingY == lmm.genesis$workingY))
-    expect_true(all(nullmod$model.matrix == lmm.genesis$model.matrix))
-    expect_equal(nullmod$family$family, lmm.genesis$family$family)
-
-    seqClose(svd)
+    # what if covMat is already in a different order?
+    keep <- rev(dat$sample.id)
+    dimnames(covMat) <- list(keep, keep)
+    nm <- fitNullModel2(dat, outcome="a", covars="b", group.var="b", covMatList=covMat, sample.id=keep, verbose=FALSE)
+    expect_equal(nm$sample.id, keep)
 })

@@ -4,6 +4,113 @@ library(GenomicRanges)
 library(Biobase)
 
 
+test_that("fitNullMM2 matches fitNulMM", {
+    svd <- .testData()
+    grm <- .testGRM(svd)
+    lmm.genesis <- GENESIS::fitNullMM(sampleData(svd), outcome="outcome", covars=c("sex", "age"), covMatList=grm, verbose=FALSE)
+    nullmod <- fitNullModel2(svd, outcome="outcome", covars=c("sex", "age"), covMatList=grm, verbose=FALSE)
+
+    expect_true(all(abs(nullmod$fixef - lmm.genesis$fixef) < 1e-9))
+    expect_true(all(abs(nullmod$betaCov - lmm.genesis$betaCov) < 1e-9))
+    expect_true(all(abs(nullmod$resid.marginal - lmm.genesis$resid.response) < 1e-9))
+    expect_true(all(abs(nullmod$logLik - lmm.genesis$logLik) < 1e-9))
+    expect_true(all(abs(nullmod$logLikR - lmm.genesis$logLikR) < 1e-9))
+    expect_true(all(abs(nullmod$AIC - lmm.genesis$AIC) < 1e-9))
+    expect_true(all(nullmod$workingY == lmm.genesis$workingY))
+    expect_true(all(nullmod$model.matrix == lmm.genesis$model.matrix))
+    expect_true(all(abs(nullmod$varComp - lmm.genesis$varComp) < 1e-9))
+    expect_true(all(abs(nullmod$varCompCov - lmm.genesis$varCompCov) < 1e-9)) 
+    expect_equal(nullmod$family$family, lmm.genesis$family$family)
+    expect_true(all(nullmod$zeroFLAG == lmm.genesis$zeroFLAG))
+    expect_true(all(abs(nullmod$cholSigmaInv - lmm.genesis$cholSigmaInv) < 1e-9))
+    expect_true(all(abs(nullmod$RSS - lmm.genesis$RSS) < 1e-9))
+
+    seqClose(svd)
+})
+
+test_that("fitNullMM2 matches fitNulMM - group", {
+    svd <- .testData()
+    grm <- .testGRM(svd)
+    lmm.genesis <- GENESIS::fitNullMM(sampleData(svd), outcome="outcome", covars=c("sex", "age"), covMatList=grm, group.var="status", verbose=FALSE)
+    nullmod <- fitNullModel2(svd, outcome="outcome", covars=c("sex", "age"), covMatList=grm, group.var="status", verbose=FALSE)
+
+    expect_true(all(abs(nullmod$fixef - lmm.genesis$fixef) < 1e-9))
+    expect_true(all(abs(nullmod$betaCov - lmm.genesis$betaCov) < 1e-9))
+    expect_true(all(abs(nullmod$resid.marginal - lmm.genesis$resid.response) < 1e-9))
+    expect_true(all(abs(nullmod$logLik - lmm.genesis$logLik) < 1e-9))
+    expect_true(all(abs(nullmod$logLikR - lmm.genesis$logLikR) < 1e-9))
+    expect_true(all(abs(nullmod$AIC - lmm.genesis$AIC) < 1e-9))
+    expect_true(all(nullmod$workingY == lmm.genesis$workingY))
+    expect_true(all(nullmod$model.matrix == lmm.genesis$model.matrix))
+    expect_true(all(abs(nullmod$varComp - lmm.genesis$varComp) < 1e-9))
+    expect_equal(nullmod$varCompCov, lmm.genesis$varCompCov) 
+    expect_equal(nullmod$family$family, lmm.genesis$family$family)
+    expect_true(all(nullmod$zeroFLAG == lmm.genesis$zeroFLAG))
+    expect_true(all(abs(nullmod$cholSigmaInv - lmm.genesis$cholSigmaInv) < 1e-9))
+    expect_true(all(abs(nullmod$RSS - lmm.genesis$RSS) < 1e-9))
+
+    seqClose(svd)
+})
+
+test_that("fitNullMM2 matches fitNulMM - binary", {
+    svd <- .testData()
+    grm <- .testGRM(svd)
+    lmm.genesis <- GENESIS::fitNullMM(sampleData(svd), outcome="status", covars=c("sex", "age"), covMatList=grm, family="binomial", verbose=FALSE)
+    nullmod <- fitNullModel2(svd, outcome="status", covars=c("sex", "age"), covMatList=grm, family="binomial", verbose=FALSE)
+
+    expect_true(all(abs(nullmod$fixef - lmm.genesis$fixef) < 1e-5))
+    expect_true(all(abs(nullmod$betaCov - lmm.genesis$betaCov) < 1e-5))
+    expect_true(all(abs(nullmod$resid.marginal - lmm.genesis$resid.response) < 1e-5))
+    expect_true(all(abs(nullmod$logLik - lmm.genesis$logLik) < 1e-5))
+    expect_true(all(abs(nullmod$logLikR - lmm.genesis$logLikR) < 1e-5))
+    expect_true(all(abs(nullmod$AIC - lmm.genesis$AIC) < 1e-5))
+    expect_true(all(abs(nullmod$workingY - lmm.genesis$workingY) < 1e-5))
+    expect_true(all(nullmod$model.matrix == lmm.genesis$model.matrix))
+    expect_true(all(abs(nullmod$varComp - lmm.genesis$varComp) < 1e-5))
+    expect_true(all(abs(nullmod$varCompCov - lmm.genesis$varCompCov) < 1e-5)) 
+    expect_equal(nullmod$family$family, lmm.genesis$family$family)
+    expect_true(all(nullmod$zeroFLAG == lmm.genesis$zeroFLAG))
+    expect_true(all(abs(nullmod$cholSigmaInv - lmm.genesis$cholSigmaInv) < 1e-5))
+    #expect_true(all(abs(nullmod$RSS - lmm.genesis$RSS) < 1e-5))
+
+    seqClose(svd)
+})
+
+test_that("fitNullMM2 matches fitNullReg", {
+    svd <- .testData()
+    lmm.genesis <- GENESIS::fitNullReg(sampleData(svd), outcome="outcome", covars=c("sex", "age"), verbose=FALSE)
+    nullmod <- fitNullModel2(svd, outcome="outcome", covars=c("sex", "age"), verbose=FALSE)
+
+    expect_true(all(abs(nullmod$fixef - lmm.genesis$fixef) < 1e-9))
+    expect_true(all(abs(nullmod$betaCov - lmm.genesis$betaCov) < 1e-9))
+    expect_true(all(abs(nullmod$resid.marginal - lmm.genesis$resid.response) < 1e-9))
+    expect_true(all(abs(nullmod$logLik - lmm.genesis$logLik) < 1e-9))
+    expect_true(all(abs(nullmod$AIC - lmm.genesis$AIC) < 1e-9))
+    expect_true(all(nullmod$workingY == lmm.genesis$workingY))
+    expect_true(all(nullmod$model.matrix == lmm.genesis$model.matrix))
+    expect_equal(nullmod$family$family, lmm.genesis$family$family)
+
+    seqClose(svd)
+})
+
+test_that("fitNullMM2 matches fitNullReg - binary", {
+    svd <- .testData()
+    lmm.genesis <- GENESIS::fitNullReg(sampleData(svd), outcome="status", covars=c("sex", "age"), family="binomial", verbose=FALSE)
+    nullmod <- fitNullModel2(svd, outcome="status", covars=c("sex", "age"), family="binomial", verbose=FALSE)
+
+    expect_true(all(abs(nullmod$fixef - lmm.genesis$fixef) < 1e-9))
+    expect_true(all(abs(nullmod$betaCov - lmm.genesis$betaCov) < 1e-9))
+    expect_true(all(abs(nullmod$resid.marginal - lmm.genesis$resid.response) < 1e-9))
+    expect_true(all(abs(nullmod$logLik - lmm.genesis$logLik) < 1e-9))
+    expect_true(all(abs(nullmod$AIC - lmm.genesis$AIC) < 1e-9))
+    expect_true(all(nullmod$workingY == lmm.genesis$workingY))
+    expect_true(all(nullmod$model.matrix == lmm.genesis$model.matrix))
+    expect_equal(nullmod$family$family, lmm.genesis$family$family)
+
+    seqClose(svd)
+})
+
+
 test_that("assocTestMM2 matches assocTestMM - Wald", {
     svd <- .testData()
     grm <- .testGRM(svd)

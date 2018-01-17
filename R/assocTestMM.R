@@ -9,7 +9,7 @@ setMethod("assocTestMM2",
 
               # filter samples to match null model
               nullModel <- .checkNullModel(nullModel)
-              .setFilterNullModel(gdsobj, nullModel, verbose=verbose)
+              sample.index <- .setFilterNullModel(gdsobj, nullModel, verbose=verbose)
               
               # results
               res <- list()
@@ -19,7 +19,7 @@ setMethod("assocTestMM2",
               while (iterate) {
                   var.info <- variantInfo(gdsobj, alleles=FALSE, expanded=TRUE)
                   
-                  geno <- expandedAltDosage(gdsobj, use.names=FALSE)
+                  geno <- expandedAltDosage(gdsobj, use.names=FALSE)[sample.index,]
                   
                   # allele frequency
                   freq <- .alleleFreq(gdsobj, geno)
