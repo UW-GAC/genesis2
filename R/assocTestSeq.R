@@ -36,7 +36,7 @@ setMethod("assocTestSeq2",
               while (iterate) {
                   var.info <- variantInfo(gdsobj, alleles=match.alleles, expanded=TRUE)
                   
-                  geno <- expandedAltDosage(gdsobj, use.names=FALSE)[sample.index,]
+                  geno <- expandedAltDosage(gdsobj, use.names=FALSE)[sample.index,,drop=FALSE]
 
                   if (match.alleles) {
                       index <- .matchAlleles(gdsobj, var.info)
