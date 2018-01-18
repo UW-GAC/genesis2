@@ -53,18 +53,18 @@
     dbeta(freq, weight.beta[1], weight.beta[2])
 }
 
-.checkNullModel <- function(nullModel) {
-    if (!is(nullModel, "GENESIS.nullModelPrep")) {
-        nullModel <- nullModelTestPrep(nullModel)
+.checkNullModel <- function(null.model) {
+    if (!is(null.model, "GENESIS.nullModelPrep")) {
+        null.model <- nullModelTestPrep(null.model)
     }
-    nullModel
+    null.model
 }
 
 # set a sample filter, and return the index to put filtered samples
 # in the same order as the null model
-.setFilterNullModel <- function(gdsobj, nullModel, verbose=TRUE) {
-    seqSetFilter(gdsobj, sample.id=nullModel$sample.id, verbose=verbose)
-    match(nullModel$sample.id, seqGetData(gdsobj, "sample.id"))
+.setFilterNullModel <- function(gdsobj, null.model, verbose=TRUE) {
+    seqSetFilter(gdsobj, sample.id=null.model$sample.id, verbose=verbose)
+    match(null.model$sample.id, seqGetData(gdsobj, "sample.id"))
 }
 
 .matchAlleles <- function(gdsobj, var.info) {

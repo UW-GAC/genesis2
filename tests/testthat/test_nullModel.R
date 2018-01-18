@@ -45,7 +45,7 @@ test_that("null model", {
     expect_equal(nm$workingY, dat$a[c(TRUE,FALSE)])
 })
 
-test_that("null model - covMatList", {
+test_that("null model - cov.mat", {
     dat <- data.frame(sample.id=sample(letters, 10),
                       a=rnorm(10),
                       b=c(rep("a",5), rep("b", 5)),
@@ -53,7 +53,7 @@ test_that("null model - covMatList", {
     dat <- AnnotatedDataFrame(dat)
     covMat <- crossprod(matrix(rnorm(100,sd=0.05),10,10))
     dimnames(covMat) <- list(dat$sample.id, dat$sample.id)
-    nm <- fitNullModel2(dat, outcome="a", covars="b", covMatList=covMat, verbose=FALSE)
+    nm <- fitNullModel2(dat, outcome="a", covars="b", cov.mat=covMat, verbose=FALSE)
     expect_equal(nm$sample.id, dat$sample.id)
     expect_equal(nm$workingY, dat$a)
 })
@@ -102,7 +102,7 @@ test_that("change sample order", {
     expect_warning(newCovMat <- .orderSamples(covMat, dat$sample.id, keep), "no dimnames")
     dimnames(covMat) <- list(dat$sample.id, dat$sample.id)
     expect_equal(newCovMat, covMat[keep,keep])
-    nm <- fitNullModel2(dat, outcome="a", covars="b", group.var="b", covMatList=covMat, sample.id=keep, verbose=FALSE)
+    nm <- fitNullModel2(dat, outcome="a", covars="b", group.var="b", cov.mat=covMat, sample.id=keep, verbose=FALSE)
     expect_equal(nm$sample.id, keep)
 
     dimnames(covMat) <- list(1:10, 1:10)
@@ -111,6 +111,6 @@ test_that("change sample order", {
     # what if covMat is already in a different order?
     keep <- rev(dat$sample.id)
     dimnames(covMat) <- list(keep, keep)
-    nm <- fitNullModel2(dat, outcome="a", covars="b", group.var="b", covMatList=covMat, sample.id=keep, verbose=FALSE)
+    nm <- fitNullModel2(dat, outcome="a", covars="b", group.var="b", cov.mat=covMat, sample.id=keep, verbose=FALSE)
     expect_equal(nm$sample.id, keep)
 })

@@ -8,7 +8,7 @@ setGeneric("assocTestSeq2", function(gdsobj, ...) standardGeneric("assocTestSeq2
 
 setMethod("assocTestSeq2",
           "SeqVarIterator",
-          function(gdsobj, nullModel, AF.max=1,
+          function(gdsobj, null.model, AF.max=1,
                    weight.beta=c(1,1), weight.user=NULL,
                    test=c("Burden", "SKAT"),
                    burden.test=c("Score", "Wald"), rho=0,
@@ -21,8 +21,8 @@ setMethod("assocTestSeq2",
               pval.method <- match.arg(pval.method)
 
               # filter samples to match null model
-              nullModel <- .checkNullModel(nullModel)
-              sample.index <- .setFilterNullModel(gdsobj, nullModel, verbose=verbose)
+              null.model <- .checkNullModel(null.model)
+              sample.index <- .setFilterNullModel(gdsobj, null.model, verbose=verbose)
 
               # do we need to match on alleles?
               match.alleles <- any(c("ref", "alt") %in% names(mcols(currentRanges(gdsobj))))
@@ -88,7 +88,7 @@ setMethod("assocTestSeq2",
                       }
 
                       # do the test
-                      assoc <- testVariantSet(nullModel, G=geno, weights=weight, test=test, 
+                      assoc <- testVariantSet(null.model, G=geno, weights=weight, test=test, 
                                               burden.test=burden.test, rho=rho,
                                               pval.method=pval.method)
                       res[[i]] <- cbind(res[[i]], assoc)

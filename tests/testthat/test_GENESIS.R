@@ -8,7 +8,7 @@ test_that("fitNullMM2 matches fitNulMM", {
     svd <- .testData()
     grm <- .testGRM(svd)
     lmm.genesis <- GENESIS::fitNullMM(sampleData(svd), outcome="outcome", covars=c("sex", "age"), covMatList=grm, verbose=FALSE)
-    nullmod <- fitNullModel2(svd, outcome="outcome", covars=c("sex", "age"), covMatList=grm, verbose=FALSE)
+    nullmod <- fitNullModel2(svd, outcome="outcome", covars=c("sex", "age"), cov.mat=grm, verbose=FALSE)
 
     expect_true(all(abs(nullmod$fixef - lmm.genesis$fixef) < 1e-9))
     expect_true(all(abs(nullmod$betaCov - lmm.genesis$betaCov) < 1e-9))
@@ -32,7 +32,7 @@ test_that("fitNullMM2 matches fitNulMM - group", {
     svd <- .testData()
     grm <- .testGRM(svd)
     lmm.genesis <- GENESIS::fitNullMM(sampleData(svd), outcome="outcome", covars=c("sex", "age"), covMatList=grm, group.var="status", verbose=FALSE)
-    nullmod <- fitNullModel2(svd, outcome="outcome", covars=c("sex", "age"), covMatList=grm, group.var="status", verbose=FALSE)
+    nullmod <- fitNullModel2(svd, outcome="outcome", covars=c("sex", "age"), cov.mat=grm, group.var="status", verbose=FALSE)
 
     expect_true(all(abs(nullmod$fixef - lmm.genesis$fixef) < 1e-9))
     expect_true(all(abs(nullmod$betaCov - lmm.genesis$betaCov) < 1e-9))
@@ -56,7 +56,7 @@ test_that("fitNullMM2 matches fitNulMM - binary", {
     svd <- .testData()
     grm <- .testGRM(svd)
     lmm.genesis <- GENESIS::fitNullMM(sampleData(svd), outcome="status", covars=c("sex", "age"), covMatList=grm, family="binomial", verbose=FALSE)
-    nullmod <- fitNullModel2(svd, outcome="status", covars=c("sex", "age"), covMatList=grm, family="binomial", verbose=FALSE)
+    nullmod <- fitNullModel2(svd, outcome="status", covars=c("sex", "age"), cov.mat=grm, family="binomial", verbose=FALSE)
 
     expect_true(all(abs(nullmod$fixef - lmm.genesis$fixef) < 1e-5))
     expect_true(all(abs(nullmod$betaCov - lmm.genesis$betaCov) < 1e-5))
@@ -121,7 +121,7 @@ test_that("assocTestMM2 matches assocTestMM - Wald", {
     snv <- isSNV(svd, biallelic=TRUE)
     assoc1 <- GENESIS::assocTestMM(svd, nullmod, snp.include=which(snv), verbose=FALSE)
     
-    nullmod <- fitNullModel2(svd, outcome="outcome", covMatList=grm, verbose=FALSE)
+    nullmod <- fitNullModel2(svd, outcome="outcome", cov.mat=grm, verbose=FALSE)
     seqSetFilter(svd, variant.sel=snv, verbose=FALSE)
     iterator <- SeqVarBlockIterator(svd, variantBlock=500, verbose=FALSE)
     assoc2 <- assocTestMM2(iterator, nullmod, verbose=FALSE)
@@ -152,7 +152,7 @@ test_that("assocTestMM2 matches assocTestMM - Score", {
     snv <- isSNV(svd, biallelic=TRUE)
     assoc1 <- GENESIS::assocTestMM(svd, nullmod, test="Score", snp.include=which(snv), verbose=FALSE)
     
-    nullmod <- fitNullModel2(svd, outcome="outcome", covars=c("sex", "age"), covMatList=grm, verbose=FALSE)
+    nullmod <- fitNullModel2(svd, outcome="outcome", covars=c("sex", "age"), cov.mat=grm, verbose=FALSE)
     seqSetFilter(svd, variant.sel=snv, verbose=FALSE)
     iterator <- SeqVarBlockIterator(svd, variantBlock=500, verbose=FALSE)
     assoc2 <- assocTestMM2(iterator, nullmod, test="Score", verbose=FALSE)
@@ -178,7 +178,7 @@ test_that("assocTestMM2 matches assocTestMM - binary", {
     snv <- isSNV(svd, biallelic=TRUE)
     assoc1 <- GENESIS::assocTestMM(svd, nullmod, test="Score", snp.include=which(snv), verbose=FALSE)
     
-    nullmod <- fitNullModel2(svd, outcome="status", covars=c("sex", "age"), covMatList=grm, family="binomial", verbose=FALSE)
+    nullmod <- fitNullModel2(svd, outcome="status", covars=c("sex", "age"), cov.mat=grm, family="binomial", verbose=FALSE)
     seqSetFilter(svd, variant.sel=snv, verbose=FALSE)
     iterator <- SeqVarBlockIterator(svd, variantBlock=500, verbose=FALSE)
     assoc2 <- assocTestMM2(iterator, nullmod, test="Score", verbose=FALSE)
@@ -254,7 +254,7 @@ test_that("assocTestSeq2 matches assocTestSeqWindow - Burden, Wald, LMM", {
     nullmod <- GENESIS::fitNullMM(sampleData(svd), outcome="outcome", covars=c("sex", "age"), covMatList=grm, verbose=FALSE)
     assoc1 <- GENESIS::assocTestSeqWindow(svd, nullmod, window.size=100, window.shift=50, test="Burden", burden.test="Wald", verbose=FALSE, chromosome=1)
     
-    nullmod <- fitNullModel2(svd, outcome="outcome", covars=c("sex", "age"), covMatList=grm, verbose=FALSE)
+    nullmod <- fitNullModel2(svd, outcome="outcome", covars=c("sex", "age"), cov.mat=grm, verbose=FALSE)
     seqSetFilterChrom(svd, include=1, verbose=FALSE)
     iterator <- SeqVarWindowIterator(svd, windowSize=1e5, windowShift=5e4, verbose=FALSE)
     assoc2 <- assocTestSeq2(iterator, nullmod, test="Burden", burden.test="Wald", verbose=FALSE)
@@ -276,7 +276,7 @@ test_that("assocTestSeq2 matches assocTestSeqWindow - Burden, Score, LMM", {
     nullmod <- GENESIS::fitNullMM(sampleData(svd), outcome="outcome", covars=c("sex", "age"), covMatList=grm, verbose=FALSE)
     assoc1 <- GENESIS::assocTestSeqWindow(svd, nullmod, window.size=100, window.shift=50, test="Burden", burden.test="Score", verbose=FALSE, chromosome=1)
     
-    nullmod <- fitNullModel2(svd, outcome="outcome", covars=c("sex", "age"), covMatList=grm, verbose=FALSE)
+    nullmod <- fitNullModel2(svd, outcome="outcome", covars=c("sex", "age"), cov.mat=grm, verbose=FALSE)
     seqSetFilterChrom(svd, include=1, verbose=FALSE)
     iterator <- SeqVarWindowIterator(svd, windowSize=1e5, windowShift=5e4, verbose=FALSE)
     assoc2 <- assocTestSeq2(iterator, nullmod, test="Burden", burden.test="Score", verbose=FALSE)
@@ -319,7 +319,7 @@ test_that("assocTestSeq2 matches assocTestSeqWindow - Burden, Binary, LMM", {
     nullmod <- GENESIS::fitNullMM(sampleData(svd), outcome="status", covars=c("sex", "age"), covMatList=grm, family="binomial", verbose=FALSE)
     assoc1 <- GENESIS::assocTestSeqWindow(svd, nullmod, window.size=100, window.shift=50, test="Burden", burden.test="Score", verbose=FALSE, chromosome=1)
     
-    nullmod <- fitNullModel2(svd, outcome="status", covars=c("sex", "age"), covMatList=grm, family="binomial", verbose=FALSE)
+    nullmod <- fitNullModel2(svd, outcome="status", covars=c("sex", "age"), cov.mat=grm, family="binomial", verbose=FALSE)
     seqSetFilterChrom(svd, include=1, verbose=FALSE)
     iterator <- SeqVarWindowIterator(svd, windowSize=1e5, windowShift=5e4, verbose=FALSE)
     assoc2 <- assocTestSeq2(iterator, nullmod, test="Burden", burden.test="Score", verbose=FALSE)
@@ -381,7 +381,7 @@ test_that("assocTestSeq2 matches assocTestSeqWindow - SKAT, LMM", {
     nullmod <- GENESIS::fitNullMM(sampleData(svd), outcome="outcome", covars=c("sex", "age"), covMatList=grm, verbose=FALSE)
     assoc1 <- GENESIS::assocTestSeqWindow(svd, nullmod, window.size=100, window.shift=50, test="SKAT", verbose=FALSE, chromosome=1)
     
-    nullmod <- fitNullModel2(svd, outcome="outcome", covars=c("sex", "age"), covMatList=grm, verbose=FALSE)
+    nullmod <- fitNullModel2(svd, outcome="outcome", covars=c("sex", "age"), cov.mat=grm, verbose=FALSE)
     seqSetFilterChrom(svd, include=1, verbose=FALSE)
     iterator <- SeqVarWindowIterator(svd, windowSize=1e5, windowShift=5e4, verbose=FALSE)
     assoc2 <- assocTestSeq2(iterator, nullmod, test="SKAT", verbose=FALSE)
@@ -402,7 +402,7 @@ test_that("assocTestSeq2 matches assocTestSeqWindow - SKAT, binary, LMM", {
     nullmod <- GENESIS::fitNullMM(sampleData(svd), outcome="status", covars=c("sex", "age"), covMatList=grm, family="binomial", verbose=FALSE)
     assoc1 <- GENESIS::assocTestSeqWindow(svd, nullmod, window.size=100, window.shift=50, test="SKAT", verbose=FALSE, chromosome=1)
     
-    nullmod <- fitNullModel2(svd, outcome="status", covars=c("sex", "age"), covMatList=grm, family="binomial", verbose=FALSE)
+    nullmod <- fitNullModel2(svd, outcome="status", covars=c("sex", "age"), cov.mat=grm, family="binomial", verbose=FALSE)
     seqSetFilterChrom(svd, include=1, verbose=FALSE)
     iterator <- SeqVarWindowIterator(svd, windowSize=1e5, windowShift=5e4, verbose=FALSE)
     assoc2 <- assocTestSeq2(iterator, nullmod, test="SKAT", verbose=FALSE)
@@ -423,7 +423,7 @@ test_that("assocTestSeq2 matches assocTestSeqWindow - SKAT-O, LMM", {
     nullmod <- GENESIS::fitNullMM(sampleData(svd), outcome="outcome", covars=c("sex", "age"), covMatList=grm, verbose=FALSE)
     assoc1 <- GENESIS::assocTestSeqWindow(svd, nullmod, window.size=100, window.shift=50, test="SKAT", rho=c(0,0.5,1), verbose=FALSE, chromosome=1)
     
-    nullmod <- fitNullModel2(svd, outcome="outcome", covars=c("sex", "age"), covMatList=grm, verbose=FALSE)
+    nullmod <- fitNullModel2(svd, outcome="outcome", covars=c("sex", "age"), cov.mat=grm, verbose=FALSE)
     seqSetFilterChrom(svd, include=1, verbose=FALSE)
     iterator <- SeqVarWindowIterator(svd, windowSize=1e5, windowShift=5e4, verbose=FALSE)
     assoc2 <- assocTestSeq2(iterator, nullmod, test="SKAT", rho=c(0,0.5,1), verbose=FALSE)

@@ -4,12 +4,12 @@ setGeneric("assocTestMM2", function(gdsobj, ...) standardGeneric("assocTestMM2")
 ## do we want to make imputing to the mean optional?
 setMethod("assocTestMM2",
           "SeqVarIterator",
-          function(gdsobj, nullModel, test = c("Wald", "Score"), ivars = NULL, verbose=TRUE) {
+          function(gdsobj, null.model, test = c("Wald", "Score"), ivars = NULL, verbose=TRUE) {
               test <- match.arg(test)
 
               # filter samples to match null model
-              nullModel <- .checkNullModel(nullModel)
-              sample.index <- .setFilterNullModel(gdsobj, nullModel, verbose=verbose)
+              null.model <- .checkNullModel(null.model)
+              sample.index <- .setFilterNullModel(gdsobj, null.model, verbose=verbose)
               
               # results
               res <- list()
@@ -33,7 +33,7 @@ setMethod("assocTestMM2",
                   }
 
                   # do the test
-                  assoc <- testGenoSingleVar(nullModel, G=geno, E=ivars, test=test)
+                  assoc <- testGenoSingleVar(null.model, G=geno, E=ivars, test=test)
                   # set monomorphs to NA - do we want to skip testing these to save time?
                   assoc[freq %in% c(0,1),] <- NA
 
