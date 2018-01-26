@@ -18,7 +18,7 @@ setMethod("assocTestMM2",
               while (iterate) {
                   var.info <- variantInfo(gdsobj, alleles=FALSE, expanded=TRUE)
                   
-                  geno <- expandedAltDosage(gdsobj, use.names=FALSE)[sample.index,,drop=FALSE]
+                  geno <- expandedAltDosage(gdsobj, use.names=FALSE, sparse=TRUE)[sample.index,,drop=FALSE]
                   
                   # allele frequency
                   freq <- .alleleFreq(gdsobj, geno)

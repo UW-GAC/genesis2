@@ -1,5 +1,6 @@
 import(stats)
 import(methods)
+import(Matrix)
 import(SeqArray)
 import(SeqVarTools)
 import(Biobase)
