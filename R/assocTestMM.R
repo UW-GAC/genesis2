@@ -8,7 +8,6 @@ setMethod("assocTestMM2",
               test <- match.arg(test)
 
               # filter samples to match null model
-              null.model <- .checkNullModel(null.model)
               sample.index <- .setFilterNullModel(gdsobj, null.model, verbose=verbose)
               
               # results

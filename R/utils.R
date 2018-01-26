@@ -53,13 +53,6 @@
     dbeta(freq, weight.beta[1], weight.beta[2])
 }
 
-.checkNullModel <- function(null.model) {
-    if (!is(null.model, "GENESIS.nullModelPrep")) {
-        null.model <- nullModelTestPrep(null.model)
-    }
-    null.model
-}
-
 # set a sample filter, and return the index to put filtered samples
 # in the same order as the null model
 .setFilterNullModel <- function(gdsobj, null.model, verbose=TRUE) {

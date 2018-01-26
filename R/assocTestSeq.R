@@ -21,7 +21,6 @@ setMethod("assocTestSeq2",
               pval.method <- match.arg(pval.method)
 
               # filter samples to match null model
-              null.model <- .checkNullModel(null.model)
               sample.index <- .setFilterNullModel(gdsobj, null.model, verbose=verbose)
 
               # do we need to match on alleles?
