@@ -44,6 +44,23 @@ setMethod("fitNullModel2",
               fitNullModel2(sampleData(x), ...)
           })
 
+
+invNormNullModel <- function(null.model, cov.mat = NULL, ...) {
+
+    # subset or re-order cov.mat if necessary
+    if (!is.null(cov.mat)) {
+        if (!is.list(cov.mat)) {
+            cov.mat <- list(A=cov.mat)
+        }
+        cov.mat <- lapply(cov.mat, function(x) {
+            .orderSamples(x, orig.ids=rownames(x), new.ids=null.model$sample.id)
+        })
+    }
+
+    updateNullModOutcome(null.model, covMatList=cov.mat, ...)
+}
+
+
 .orderSamples <- function(cov.mat, orig.ids, new.ids) {
     if (!is.null(rownames(cov.mat)) & !is.null(colnames(cov.mat))) {
         stopifnot(identical(rownames(cov.mat), colnames(cov.mat)))

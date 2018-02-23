@@ -9,3 +9,4 @@ importFrom(dplyr, bind_rows, inner_join)
 importFrom(S4Vectors, mcols)
 
 exportMethods("assocTestMM2", "assocTestSeq2", "fitNullModel2")
+export("invNormNullModel")

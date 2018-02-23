@@ -31,6 +31,29 @@ test_that("assocTestMM2 - reorder samples", {
     expect_equal(nullmod$sample.id, samp)
     assoc <- assocTestMM2(iterator, nullmod, verbose=FALSE)
     expect_equal(max(assoc$n.obs), 50)
+
+    # check that we get same assoc results with samples in different order
+    samp.sort <- sort(samp)
+    nullmod <- fitNullModel2(iterator, outcome="outcome", covars=c("sex", "age"), sample.id=samp.sort, verbose=FALSE)
+    expect_equal(nullmod$sample.id, samp.sort)
+    seqResetFilter(svd, verbose=FALSE)
+    iterator <- SeqVarBlockIterator(svd, variantBlock=500, verbose=FALSE)
+    assoc2 <- assocTestMM2(iterator, nullmod, verbose=FALSE)
+    expect_equal(assoc, assoc2)
+    
+    seqClose(svd)
+})
+
+
+## test the lines of code that reorder the genotypes
+test_that("reorder genotypes", {
+    svd <- .testData()
+    samp <- sample(sampleData(svd)$sample.id, 50)
+    nullmod <- fitNullModel2(svd, outcome="outcome", covars=c("sex", "age"), sample.id=samp, verbose=FALSE)
+    sample.index <- .setFilterNullModel(svd, nullmod, verbose=FALSE)
+    geno <- expandedAltDosage(svd, use.names=TRUE, sparse=TRUE)[sample.index,,drop=FALSE]
+    expect_equal(rownames(geno), samp)
+    
     seqClose(svd)
 })
 

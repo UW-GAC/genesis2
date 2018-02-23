@@ -114,3 +114,19 @@ test_that("change sample order", {
     nm <- fitNullModel2(dat, outcome="a", covars="b", group.var="b", cov.mat=covMat, sample.id=keep, verbose=FALSE)
     expect_equal(nm$sample.id, keep)
 })
+
+test_that("inv norm", {
+    dat <- data.frame(a=rnorm(10),
+                      b=c(rep("a",5), rep("b", 5)),
+                      stringsAsFactors=FALSE)
+    covMat <- crossprod(matrix(rnorm(100,sd=0.05),10,10, dimnames=list(1:10, 1:10)))
+    nm <- fitNullModel2(dat, outcome="a", covars="b", group.var="b", cov.mat=covMat, verbose=FALSE)
+    inv <- invNormNullModel(nm, covMat, verbose=FALSE)
+    expect_equal(nm$sample.id, inv$sample.id)
+    
+    # change order of covMat with respect to null model
+    ind <- sample(1:10)
+    inv2 <- invNormNullModel(nm, covMat[ind, ind], verbose=FALSE)
+    expect_equal(nm$sample.id, inv2$sample.id)
+    expect_equal(inv$workingY, inv2$workingY)
+})
