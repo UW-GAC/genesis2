@@ -1,7 +1,7 @@
 
-setGeneric("fitNullModel2", function(x, ...) standardGeneric("fitNullModel2"))
+setGeneric("fitNullModel", function(x, ...) standardGeneric("fitNullModel"))
 
-setMethod("fitNullModel2",
+setMethod("fitNullModel",
           "data.frame",
           function(x, outcome,
                    covars = NULL,
@@ -9,11 +9,11 @@ setMethod("fitNullModel2",
                    group.var = NULL,
                    ...) {
               desmat <- createDesignMatrix2(x, outcome, covars, group.var)
-              fitNullModel(y=desmat$y, X=desmat$X, covMatList=cov.mat,
-                           group.idx=desmat$group.idx, ...)
+              fitNullMod(y=desmat$y, X=desmat$X, covMatList=cov.mat,
+                         group.idx=desmat$group.idx, ...)
           })
 
-setMethod("fitNullModel2",
+setMethod("fitNullModel",
           "AnnotatedDataFrame",
           function(x, outcome,
                    covars = NULL,
@@ -34,18 +34,18 @@ setMethod("fitNullModel2",
                   }
               }
               
-              fitNullModel(y=desmat$y, X=desmat$X, covMatList=cov.mat,
-                           group.idx=desmat$group.idx, ...)
+              fitNullMod(y=desmat$y, X=desmat$X, covMatList=cov.mat,
+                         group.idx=desmat$group.idx, ...)
           })
 
-setMethod("fitNullModel2",
+setMethod("fitNullModel",
           "SeqVarData",
           function(x, ...) {
-              fitNullModel2(sampleData(x), ...)
+              fitNullModel(sampleData(x), ...)
           })
 
 
-invNormNullModel <- function(null.model, cov.mat = NULL, ...) {
+nullModelInvNorm <- function(null.model, cov.mat = NULL, ...) {
 
     # subset or re-order cov.mat if necessary
     if (!is.null(cov.mat)) {

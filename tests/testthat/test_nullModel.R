@@ -39,7 +39,7 @@ test_that("null model", {
                       stringsAsFactors=FALSE)
     dat <- AnnotatedDataFrame(dat)
     keep <- dat$sample.id[c(TRUE,FALSE)]
-    nm <- fitNullModel2(dat, outcome="a", covars="b", sample.id=keep, verbose=FALSE)
+    nm <- fitNullModel(dat, outcome="a", covars="b", sample.id=keep, verbose=FALSE)
     expect_equal(rownames(nm$model.matrix), keep)
     expect_equal(nm$sample.id, keep)
     expect_equal(nm$workingY, dat$a[c(TRUE,FALSE)])
@@ -53,7 +53,7 @@ test_that("null model - cov.mat", {
     dat <- AnnotatedDataFrame(dat)
     covMat <- crossprod(matrix(rnorm(100,sd=0.05),10,10))
     dimnames(covMat) <- list(dat$sample.id, dat$sample.id)
-    nm <- fitNullModel2(dat, outcome="a", covars="b", cov.mat=covMat, verbose=FALSE)
+    nm <- fitNullModel(dat, outcome="a", covars="b", cov.mat=covMat, verbose=FALSE)
     expect_equal(nm$sample.id, dat$sample.id)
     expect_equal(nm$workingY, dat$a)
 })
@@ -62,7 +62,7 @@ test_that("null model from data.frame", {
     dat <- data.frame(a=rnorm(10),
                       b=c(rep("a",5), rep("b", 5)),
                       stringsAsFactors=FALSE)
-    nm <- fitNullModel2(dat, outcome="a", covars="b", verbose=FALSE)
+    nm <- fitNullModel(dat, outcome="a", covars="b", verbose=FALSE)
     expect_equal(nm$workingY, dat$a)
     expect_equal(nm$sample.id, as.character(1:10))
 })
@@ -80,7 +80,7 @@ test_that("group.var", {
                       stringsAsFactors=FALSE)
     dat <- AnnotatedDataFrame(dat)
     keep <- dat$sample.id[c(TRUE,FALSE)]
-    nm <- fitNullModel2(dat, outcome="a", covars="b", group.var="b", sample.id=keep, verbose=FALSE)
+    nm <- fitNullModel(dat, outcome="a", covars="b", group.var="b", sample.id=keep, verbose=FALSE)
     expect_equal(rownames(nm$model.matrix), keep)
     expect_equal(nm$workingY, dat$a[c(TRUE,FALSE)])
     expect_equal(nm$group.idx, list(a=1:3, b=4:5))
@@ -102,7 +102,7 @@ test_that("change sample order", {
     expect_warning(newCovMat <- .orderSamples(covMat, dat$sample.id, keep), "no dimnames")
     dimnames(covMat) <- list(dat$sample.id, dat$sample.id)
     expect_equal(newCovMat, covMat[keep,keep])
-    nm <- fitNullModel2(dat, outcome="a", covars="b", group.var="b", cov.mat=covMat, sample.id=keep, verbose=FALSE)
+    nm <- fitNullModel(dat, outcome="a", covars="b", group.var="b", cov.mat=covMat, sample.id=keep, verbose=FALSE)
     expect_equal(nm$sample.id, keep)
 
     dimnames(covMat) <- list(1:10, 1:10)
@@ -111,7 +111,7 @@ test_that("change sample order", {
     # what if covMat is already in a different order?
     keep <- rev(dat$sample.id)
     dimnames(covMat) <- list(keep, keep)
-    nm <- fitNullModel2(dat, outcome="a", covars="b", group.var="b", cov.mat=covMat, sample.id=keep, verbose=FALSE)
+    nm <- fitNullModel(dat, outcome="a", covars="b", group.var="b", cov.mat=covMat, sample.id=keep, verbose=FALSE)
     expect_equal(nm$sample.id, keep)
 })
 
@@ -120,13 +120,13 @@ test_that("inv norm", {
                       b=c(rep("a",5), rep("b", 5)),
                       stringsAsFactors=FALSE)
     covMat <- crossprod(matrix(rnorm(100,sd=0.05),10,10, dimnames=list(1:10, 1:10)))
-    nm <- fitNullModel2(dat, outcome="a", covars="b", group.var="b", cov.mat=covMat, verbose=FALSE)
-    inv <- invNormNullModel(nm, covMat, verbose=FALSE)
+    nm <- fitNullModel(dat, outcome="a", covars="b", group.var="b", cov.mat=covMat, verbose=FALSE)
+    inv <- nullModelInvNorm(nm, covMat, verbose=FALSE)
     expect_equal(nm$sample.id, inv$sample.id)
     
     # change order of covMat with respect to null model
     ind <- sample(1:10)
-    inv2 <- invNormNullModel(nm, covMat[ind, ind], verbose=FALSE)
+    inv2 <- nullModelInvNorm(nm, covMat[ind, ind], verbose=FALSE)
     expect_equal(nm$sample.id, inv2$sample.id)
     expect_equal(inv$workingY, inv2$workingY)
 })
