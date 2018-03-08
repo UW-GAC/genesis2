@@ -1,10 +1,10 @@
 setGeneric("assocTestSingle", function(gdsobj, ...) standardGeneric("assocTestSingle"))
 
-## do we want the ivars.return.betaCov option?
+## do we want the GxE.return.cov option?
 ## do we want to make imputing to the mean optional?
 setMethod("assocTestSingle",
           "SeqVarIterator",
-          function(gdsobj, null.model, test = c("Wald", "Score"), ivars = NULL, verbose=TRUE) {
+          function(gdsobj, null.model, test=c("Wald", "Score"), GxE=NULL, verbose=TRUE) {
               test <- match.arg(test)
 
               # filter samples to match null model
@@ -32,7 +32,8 @@ setMethod("assocTestSingle",
                   }
 
                   # do the test
-                  assoc <- testGenoSingleVar(null.model, G=geno, E=ivars, test=test)
+                  if (!is.null(GxE)) GxE <- .modelMatrixColumns(null.model, GxE)
+                  assoc <- testGenoSingleVar(null.model, G=geno, E=GxE, test=test)
                   # set monomorphs to NA - do we want to skip testing these to save time?
                   assoc[freq %in% c(0,1),] <- NA
 

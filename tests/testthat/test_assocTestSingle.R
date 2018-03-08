@@ -82,3 +82,15 @@ test_that("assocTestSingle matches regression", {
     
     seqClose(svd)
 })
+
+test_that("assocTestSingle - GxE", {
+    svd <- .testData()
+    tmp <- sampleData(svd)
+    tmp$env <- sample(letters[1:3], nrow(tmp), replace=TRUE)
+    sampleData(svd) <- tmp
+    iterator <- SeqVarBlockIterator(svd, variantBlock=2000, verbose=FALSE)
+    nullmod <- fitNullModel(iterator, outcome="outcome", covars=c("sex", "age", "env"), verbose=FALSE)
+    assoc <- assocTestSingle(iterator, nullmod, GxE="env", verbose=FALSE)
+    expect_true(all(c("Est.G:envb", "SE.G:envb", "GxE.Stat") %in% names(assoc)))
+    seqClose(svd)
+})

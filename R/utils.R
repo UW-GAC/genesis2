@@ -60,6 +60,10 @@
     match(null.model$sample.id, seqGetData(gdsobj, "sample.id"))
 }
 
+.modelMatrixColumns <- function(null.model, col.name) {
+    null.model$model.matrix[,grep(paste0("^", col.name), colnames(null.model$model.matrix)),drop=FALSE]
+}
+
 .matchAlleles <- function(gdsobj, var.info) {
     var.info$n <- 1:nrow(var.info)
     var.sel <- as.data.frame(currentRanges(gdsobj))

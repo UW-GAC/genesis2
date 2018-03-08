@@ -193,6 +193,36 @@ test_that("assocTestSingle matches assocTestMM - binary", {
 })
 
 
+test_that("assocTestSingle matches assocTestMM - GxE", {
+    svd <- .testData()
+    grm <- .testGRM(svd)
+    seqSetFilter(svd, variant.sel=20:100, verbose=FALSE)
+    nullmod <- GENESIS::fitNullMM(sampleData(svd), outcome="outcome", covars="sex", covMatList=grm, verbose=FALSE)
+    
+    # multiallelic variants are handled differently
+    assoc1 <- GENESIS::assocTestMM(svd, nullmod, ivars="sex", verbose=FALSE)
+    
+    nullmod <- fitNullModel(svd, outcome="outcome", covars="sex", cov.mat=grm, verbose=FALSE)
+    iterator <- SeqVarBlockIterator(svd, variantBlock=500, verbose=FALSE)
+    assoc2 <- assocTestSingle(iterator, nullmod, GxE="sex", verbose=FALSE)
+
+    keep <- which(!is.na(assoc1$Est.G) & !is.na(assoc2$Est.G))
+    assoc1 <- assoc1[keep,]
+    assoc2 <- assoc2[keep,]
+    
+    expect_equal(assoc1$Est.G, assoc2$Est.G)
+    expect_equal(assoc1$`Est.G:sexM`, assoc2$`Est.G:sexM`)
+    expect_equal(assoc1$SE.G, assoc2$SE.G)
+    expect_equal(assoc1$`SE.G:sexM`, assoc2$`SE.G:sexM`)
+    expect_equal(assoc1$GxE.Stat, (assoc2$GxE.Stat)^2)
+    expect_equal(assoc1$GxE.pval, assoc2$GxE.pval)
+    expect_equal(assoc1$Joint.Stat, (assoc2$Joint.Stat)^2)
+    expect_equal(assoc1$Joint.pval, assoc2$Joint.pval)
+    
+    seqClose(svd)
+})
+
+
 test_that("assocTestAggregate matches assocTestSeqWindow - Burden, Wald", {
     svd <- .testData()
     nullmod <- GENESIS::fitNullReg(sampleData(svd), outcome="outcome", covars=c("sex", "age"), verbose=FALSE)

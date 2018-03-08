@@ -8,7 +8,7 @@
                      outcome=rnorm(length(sample.id), mean=10, sd=5),
                      status=rbinom(length(sample.id), size=1, prob=0.4),
                      stringsAsFactors=FALSE)
-    sampleData(gds) <- Biobase::AnnotatedDataFrame(df)
+    SeqVarTools::sampleData(gds) <- Biobase::AnnotatedDataFrame(df)
     gds
 }
 
