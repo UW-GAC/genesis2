@@ -1,16 +1,10 @@
 setGeneric("assocTestAggregate", function(gdsobj, ...) standardGeneric("assocTestAggregate"))
 
-## should allele frequency filter be an argument, or set ahead of time?
-## if an argument, can make sure freq is calcuated on sample set used
-## compare seqSetFilterCond to calcluating MAF separately
-## previously, returned rows in variantInfo for high-freq variants but set weight to 0
-##  - why do this instead of just filtering?
-
 setMethod("assocTestAggregate",
           "SeqVarIterator",
           function(gdsobj, null.model, AF.max=1,
                    weight.beta=c(1,1), weight.user=NULL,
-                   test=c("Burden", "SKAT"),
+                   test=c("Burden", "SKAT", "Hybrid"),
                    burden.test=c("Score", "Wald"), rho=0,
                    pval.method=c("davies", "kuonen", "liu"),
                    verbose=TRUE) {
