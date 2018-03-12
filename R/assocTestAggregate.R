@@ -4,7 +4,7 @@ setMethod("assocTestAggregate",
           "SeqVarIterator",
           function(gdsobj, null.model, AF.max=1,
                    weight.beta=c(1,1), weight.user=NULL,
-                   test=c("Burden", "SKAT", "Hybrid"),
+                   test=c("Burden", "SKAT", "SMMAT"),
                    burden.test=c("Score", "Wald"), rho=0,
                    pval.method=c("davies", "kuonen", "liu"),
                    verbose=TRUE) {
