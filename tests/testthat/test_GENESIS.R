@@ -118,12 +118,12 @@ test_that("assocTestSingle matches assocTestMM - Wald", {
     
     # multiallelic variants are handled differently
     snv <- isSNV(svd, biallelic=TRUE)
-    assoc1 <- GENESIS::assocTestMM(svd, nullmod, snp.include=which(snv), verbose=FALSE)
+    assoc1 <- GENESIS::assocTestMM(svd, nullmod, test="Wald", snp.include=which(snv), verbose=FALSE)
     
     nullmod <- fitNullModel(svd, outcome="outcome", cov.mat=grm, verbose=FALSE)
     seqSetFilter(svd, variant.sel=snv, verbose=FALSE)
     iterator <- SeqVarBlockIterator(svd, variantBlock=500, verbose=FALSE)
-    assoc2 <- assocTestSingle(iterator, nullmod, verbose=FALSE)
+    assoc2 <- assocTestSingle(iterator, nullmod, test="Wald", verbose=FALSE)
     not1 <- setdiff(assoc2$variant.id, assoc1$snpID)
     expect_true(all(assoc2$freq[not1] %in% c(0,1)))
     expect_true(all(is.na(assoc2$Est[not1])))
