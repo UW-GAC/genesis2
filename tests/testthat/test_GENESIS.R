@@ -204,7 +204,7 @@ test_that("assocTestSingle matches assocTestMM - GxE", {
     
     nullmod <- fitNullModel(svd, outcome="outcome", covars="sex", cov.mat=grm, verbose=FALSE)
     iterator <- SeqVarBlockIterator(svd, variantBlock=500, verbose=FALSE)
-    assoc2 <- assocTestSingle(iterator, nullmod, GxE="sex", verbose=FALSE)
+    assoc2 <- assocTestSingle(iterator, nullmod, test="Wald", GxE="sex", verbose=FALSE)
 
     keep <- which(!is.na(assoc1$Est.G) & !is.na(assoc2$Est.G))
     assoc1 <- assoc1[keep,]
