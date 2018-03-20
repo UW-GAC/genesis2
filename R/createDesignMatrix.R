@@ -22,8 +22,9 @@ setMethod("createDesignMatrix2",
               x <- x[, c(outcome, covars), drop=FALSE]
               x <- x[complete.cases(x),,drop=FALSE]
               
-              # outcome vector
-              y <- x[[outcome]]
+              # outcome vector - preserve column name
+              #y <- x[[outcome]]
+              y <- as.matrix(x[,outcome,drop=FALSE])
               # create design matrix    
               X <- model.matrix(model.formula, data=x)
               # check for columns of all the same value (except the intercept)

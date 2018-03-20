@@ -7,7 +7,7 @@ test_that("design matrix from data.frame", {
                       c=sample(1:10, 10, replace=TRUE),
                       d=rep(1, 10))
     dm <- createDesignMatrix2(dat, outcome="a")
-    expect_equal(dm$y, dat$a)
+    expect_equivalent(dm$y, dat$a)
     expect_equal(ncol(dm$X), 1)
     expect_true(all(dm$X[,1] == 1))
     dm <- createDesignMatrix2(dat, outcome="a", covars="b")
@@ -24,11 +24,11 @@ test_that("design matrix from AnnotatedDataFrame", {
                       stringsAsFactors=FALSE)
     dat <- AnnotatedDataFrame(dat)
     dm <- createDesignMatrix2(dat, outcome="a", covars="b")
-    expect_equal(dm$y, dat$a)
+    expect_equivalent(dm$y, dat$a)
     expect_equal(rownames(dm$X), dat$sample.id)
     keep <- dat$sample.id[c(TRUE,FALSE)]
     dm <- createDesignMatrix2(dat, outcome="a", covars="b", sample.id=keep)
-    expect_equal(dm$y, dat$a[c(TRUE,FALSE)])
+    expect_equivalent(dm$y, dat$a[c(TRUE,FALSE)])
     expect_equal(rownames(dm$X), keep)
 })
 
@@ -42,7 +42,7 @@ test_that("null model", {
     nm <- fitNullModel(dat, outcome="a", covars="b", sample.id=keep, verbose=FALSE)
     expect_equal(rownames(nm$model.matrix), keep)
     expect_equal(nm$sample.id, keep)
-    expect_equal(nm$workingY, dat$a[c(TRUE,FALSE)])
+    expect_equivalent(nm$workingY, dat$a[c(TRUE,FALSE)])
 })
 
 test_that("null model - cov.mat", {
@@ -55,7 +55,7 @@ test_that("null model - cov.mat", {
     dimnames(covMat) <- list(dat$sample.id, dat$sample.id)
     nm <- fitNullModel(dat, outcome="a", covars="b", cov.mat=covMat, verbose=FALSE)
     expect_equal(nm$sample.id, dat$sample.id)
-    expect_equal(nm$workingY, dat$a)
+    expect_equivalent(nm$workingY, dat$a)
 })
 
 test_that("null model from data.frame", {
@@ -63,8 +63,7 @@ test_that("null model from data.frame", {
                       b=c(rep("a",5), rep("b", 5)),
                       stringsAsFactors=FALSE)
     nm <- fitNullModel(dat, outcome="a", covars="b", verbose=FALSE)
-    expect_equal(nm$workingY, dat$a)
-    expect_equal(nm$sample.id, as.character(1:10))
+    expect_equivalent(nm$workingY, dat$a)
 })
 
 test_that("index list", {
@@ -82,7 +81,7 @@ test_that("group.var", {
     keep <- dat$sample.id[c(TRUE,FALSE)]
     nm <- fitNullModel(dat, outcome="a", covars="b", group.var="b", sample.id=keep, verbose=FALSE)
     expect_equal(rownames(nm$model.matrix), keep)
-    expect_equal(nm$workingY, dat$a[c(TRUE,FALSE)])
+    expect_equivalent(nm$workingY, dat$a[c(TRUE,FALSE)])
     expect_equal(nm$group.idx, list(a=1:3, b=4:5))
 })
 
@@ -96,7 +95,7 @@ test_that("change sample order", {
     
     keep <- rev(dat$sample.id[c(TRUE,FALSE)])
     dm <- createDesignMatrix2(dat, outcome="a", covars="b", sample.id=keep)
-    expect_equal(dm$y, rev(dat$a[c(TRUE,FALSE)]))
+    expect_equivalent(dm$y, rev(dat$a[c(TRUE,FALSE)]))
     expect_equal(rownames(dm$X), keep)
 
     expect_warning(newCovMat <- .orderSamples(covMat, dat$sample.id, keep), "no dimnames")
@@ -129,4 +128,21 @@ test_that("inv norm", {
     inv2 <- nullModelInvNorm(nm, covMat[ind, ind], verbose=FALSE)
     expect_equal(nm$sample.id, inv2$sample.id)
     expect_equal(inv$workingY, inv2$workingY)
+})
+
+test_that("outcome has colnames", {
+    svd <- .testData()
+    adf <- sampleData(svd)
+    df <- pData(adf)
+
+    nullmod <- fitNullModel(df, outcome="outcome", covars="sex", verbose=FALSE)
+    expect_equal(colnames(nullmod$outcome), "outcome")
+    
+    nullmod <- fitNullModel(adf, outcome="outcome", covars="sex", verbose=FALSE)
+    expect_equal(colnames(nullmod$outcome), "outcome")
+    
+    nullmod <- fitNullModel(svd, outcome="outcome", covars="sex", verbose=FALSE)
+    expect_equal(colnames(nullmod$outcome), "outcome")
+    
+    seqClose(svd)
 })

@@ -42,8 +42,10 @@ setMethod("fitNullModel",
                   }
               }
               
-              fitNullMod(y=desmat$y, X=desmat$X, covMatList=cov.mat,
-                         group.idx=desmat$group.idx, ...)
+              nm <- fitNullMod(y=desmat$y, X=desmat$X, covMatList=cov.mat,
+                               group.idx=desmat$group.idx, ...)
+              nm$sample.id <- rownames(nm$model.matrix)
+              nm
           })
 
 setMethod("fitNullModel",
@@ -63,9 +65,11 @@ nullModelInvNorm <- function(null.model, cov.mat = NULL,
         if (!is.list(cov.mat)) {
             cov.mat <- list(A=cov.mat)
         }
-        cov.mat <- lapply(cov.mat, function(x) {
-            .orderSamples(x, orig.ids=rownames(x), new.ids=null.model$sample.id)
-        })
+        if (!is.null(null.model$sample.id)) {
+            cov.mat <- lapply(cov.mat, function(x) {
+                .orderSamples(x, orig.ids=rownames(x), new.ids=null.model$sample.id)
+            })
+        }
     }
 
     updateNullModOutcome(null.model, covMatList=cov.mat, rankNorm.option=norm.option,
