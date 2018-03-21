@@ -102,3 +102,24 @@ test_that("select alleles", {
     }
     seqClose(svd)
 })
+
+test_that("matchAlleles handles empty var.info", {
+    svd <- .testData()
+    gr <- GRanges(seqnames=1, ranges=IRanges(start=2000000, width=300000), ref="A", alt="T")
+    iterator <- SeqVarRangeIterator(svd, variantRanges=gr, verbose=FALSE)
+    var.info <- variantInfo(iterator)
+    ind <- .matchAlleles(svd, var.info)
+    expect_equal(length(ind), 0)
+    seqClose(svd)
+})
+
+test_that("select alleles with empty range", {
+    svd <- .testData()
+    grl <- GRangesList(GRanges(seqnames=1, ranges=IRanges(start=2000000, width=1), ref="A", alt="T"))
+    iterator <- SeqVarListIterator(svd, variantRanges=grl, verbose=FALSE)
+    nullmod <- fitNullModel(iterator, outcome="outcome", covars=c("sex", "age"), verbose=FALSE)
+    assoc <- assocTestAggregate(iterator, nullmod, verbose=FALSE)
+    expect_equal(assoc$results$n.site, 0)
+    expect_equal(length(assoc$results$variantInfo), 0)
+    seqClose(svd)
+})

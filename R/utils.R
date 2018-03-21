@@ -65,6 +65,7 @@
 }
 
 .matchAlleles <- function(gdsobj, var.info) {
+    if (nrow(var.info) == 0) return(integer(0))
     var.info$n <- 1:nrow(var.info)
     var.sel <- as.data.frame(currentRanges(gdsobj))
     var.sel$seqnames <- as.character(var.sel$seqnames)
