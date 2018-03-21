@@ -67,8 +67,6 @@ nullModelInvNorm(null.model, cov.mat = NULL, norm.option = c("by.group", "all"),
 }
   
 \value{An object of class '\code{GENESIS.nullModel}' or '\code{GENESIS.nullMixedModel}'. A list including:
-    \item{sample.id}{A vector of IDs for the samples used in the
-      analysis.}
     \item{family}{A character string specifying the family used in the analysis.}
     \item{hetResid}{A logical indicator of whether heterogeneous residual variance components were used in the model (specified by \code{group.var}).}
     \item{varComp}{The variance component estimates. There is one variance component for each random effect specified in \code{cov.mat}. When \code{family} is gaussian, there are additional residual variance components; one residual variance component when \code{group.var} is \code{NULL}, and as many residual variance components as there are unique values of \code{group.var} when it is specified.}
@@ -82,7 +80,7 @@ nullModelInvNorm(null.model, cov.mat = NULL, norm.option = c("by.group", "all"),
     \item{logLikR}{The restricted log-likelihood value.}
     \item{AIC}{The Akaike Information Criterion value.}
     \item{workingY}{The "working" outcome vector. When \code{family} is gaussian, this is just the original outcome vector. When \code{family} is not gaussian, this is the PQL linearization of the outcome vector. This is used by \code{\link{assocTestSingle}} or \code{\link{assocTestAggregate}} for genetic association testing. See 'Details' for more information.}
-    \item{outcome}{The original outcome vector. When \code{family} is gaussian, this is equal to \code{workingY}.}
+    \item{outcome}{The original outcome vector, as a 1-column matrix with column name. When \code{family} is gaussian, this is equal to \code{workingY}.}
     \item{model.matrix}{The design matrix for the fixed effect
       covariates used in the model.}
     \item{group.idx}{If \code{group.var} is not \code{NULL}, a list of
@@ -91,7 +89,7 @@ nullModelInvNorm(null.model, cov.mat = NULL, norm.option = c("by.group", "all"),
     \item{converged}{A logical indicator of whether the AIREML procedure for estimating the random effects variance components converged.}
     \item{zeroFLAG}{A vector of logicals the same length as \code{varComp} specifying whether the corresponding variance component estimate was set to 0 by the function due to convergence to the boundary in the AIREML procedure.}
     \item{RSS}{The residual sum of squares from the model fit. When \code{family} is gaussian, this will typically be 1 since the residual variance component is estimated separately.}
-    \item{call}{The call to \code{fitNullModel}.}
+    \item{sample.id}{A vector of IDs for the samples used in the analysis.}
 }
   
 \references{
