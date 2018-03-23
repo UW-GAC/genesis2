@@ -115,10 +115,13 @@ test_that("change sample order", {
 })
 
 test_that("inv norm", {
-    dat <- data.frame(a=rnorm(10),
+    dat <- data.frame(sample.id=sample(letters, 10),
+                      a=rnorm(10),
                       b=c(rep("a",5), rep("b", 5)),
                       stringsAsFactors=FALSE)
+    dat <- AnnotatedDataFrame(dat)
     covMat <- crossprod(matrix(rnorm(100,sd=0.05),10,10, dimnames=list(1:10, 1:10)))
+    dimnames(covMat) <- list(dat$sample.id, dat$sample.id)
     nm <- fitNullModel(dat, outcome="a", covars="b", group.var="b", cov.mat=covMat, verbose=FALSE)
     inv <- nullModelInvNorm(nm, covMat, verbose=FALSE)
     expect_equal(nm$sample.id, inv$sample.id)
