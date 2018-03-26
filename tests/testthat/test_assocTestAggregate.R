@@ -123,3 +123,17 @@ test_that("select alleles with empty range", {
     expect_equal(length(assoc$results$variantInfo), 0)
     seqClose(svd)
 })
+
+test_that("select alleles with mismatch", {
+    svd <- .testData()
+    vi <- variantInfo(svd)[1:10,]
+    vi$alt[2] <- vi$ref[2]
+    gr <- GRanges(seqnames=vi$chr, ranges=IRanges(start=vi$pos, width=1), alt=vi$alt)
+    grl <- GRangesList(gr)
+    iterator <- SeqVarListIterator(svd, variantRanges=grl, verbose=FALSE)
+    nullmod <- fitNullModel(iterator, outcome="outcome", covars=c("sex", "age"), verbose=FALSE)
+    assoc <- assocTestAggregate(iterator, nullmod, verbose=FALSE)
+    expect_equal(assoc$results$n.site, 9)
+    expect_equal(nrow(assoc$variantInfo[[1]]), 9)
+    seqClose(svd)
+})

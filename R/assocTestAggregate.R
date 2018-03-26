@@ -35,10 +35,12 @@ setMethod("assocTestAggregate",
                       index <- .matchAlleles(gdsobj, var.info)
                       var.info <- var.info[index,,drop=FALSE]
                       geno <- geno[,index,drop=FALSE]
+                  } else {
+                      index <- NULL
                   }
 
                   # allele frequency
-                  freq <- .alleleFreq(gdsobj, geno)
+                  freq <- .alleleFreq(gdsobj, geno, index)
                   # exclude monomorphic variants
                   mono <- freq %in% c(0,1)
                   # exclude variants with freq > max
